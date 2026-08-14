@@ -146,4 +146,22 @@ class MarketplaceTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Platform Super-Panel Overview');
     }
+
+    public function test_direct_message_start(): void
+    {
+        $client = User::where('role', 'client')->first();
+        $freelancer = User::where('role', 'freelancer')->first();
+
+        $response = $this->actingAs($client)->post('/messages/start', [
+            'recipient_id' => $freelancer->id,
+            'subject' => 'Project Inquiry',
+            'message' => 'Hello, are you available for a project?',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('messages', [
+            'sender_id' => $client->id,
+            'body' => 'Hello, are you available for a project?',
+        ]);
+    }
 }

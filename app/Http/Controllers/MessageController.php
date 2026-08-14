@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\MarketplaceNotificationMail;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class MessageController extends Controller
 {
@@ -32,6 +35,11 @@ class MessageController extends Controller
         }
 
         return view('messages.index', compact('conversations', 'activeConversation'));
+    }
+
+    public function start(Request $request)
+    {
+        return $this->startConversation($request);
     }
 
     public function startConversation(Request $request)
@@ -70,7 +78,29 @@ class MessageController extends Controller
 
         $conversation->update(['last_message_at' => now()]);
 
-        return redirect()->route('messages.index', ['conversation' => $conversation->id])->with('success', 'Message sent!');
+        // Send Email Notification to Recipient
+        try {
+            if ($recipient->email) {
+                Mail::to($recipient->email)->send(
+                    new MarketplaceNotificationMail(
+                        subject: '💬 New Message from ' . $sender->name . ' on WorkForge',
+                        greeting: 'Hi ' . $recipient->name . ',',
+                        mainMessage: $sender->name . ' sent you a direct message: "' . \Illuminate\Support\Str::limit($validated['message'], 150) . '"',
+                        actionUrl: route('messages.index', ['conversation' => $conversation->id]),
+                        actionText: 'Reply in Chat Room',
+                        details: [
+                            'Sender' => $sender->name,
+                            'Subject' => $conversation->subject ?? 'Direct Message',
+                            'Sent At' => now()->format('M d, Y h:i A'),
+                        ]
+                    )
+                );
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Message email failed: ' . $e->getMessage());
+        }
+
+        return redirect()->route('messages.index', ['conversation' => $conversation->id])->with('success', 'Message sent successfully!');
     }
 
     public function sendMessage(Request $request, Conversation $conversation)
