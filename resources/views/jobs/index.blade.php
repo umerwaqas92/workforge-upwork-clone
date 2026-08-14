@@ -1,5 +1,10 @@
 @extends('layouts.app')
 
+@section('title', 'Explore Freelance Jobs & Projects | WorkForge')
+@section('meta_description', 'Discover top freelance jobs in Development, AI Services, UI/UX Design, and Mobile. Apply with protected milestone escrow on WorkForge.')
+@section('og_title', 'Explore Freelance Jobs & Remote Projects | WorkForge')
+@section('og_description', 'Discover top freelance jobs in Development, AI Services, UI/UX Design, and Mobile. Apply with protected milestone escrow.')
+
 @section('content')
 <div class="bg-slate-900 text-white py-8 border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

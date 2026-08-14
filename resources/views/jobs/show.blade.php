@@ -1,5 +1,44 @@
 @extends('layouts.app')
 
+@section('title', $job->title . ' | Freelance Job on WorkForge')
+@section('meta_description', Str::limit(strip_tags($job->description), 150) . ' Budget: $' . number_format($job->budget_min) . ' - $' . number_format($job->budget_max) . '. Skills: ' . $job->skills->pluck('name')->join(', '))
+@section('og_title', $job->title . ' — $' . number_format($job->budget_min) . '-' . number_format($job->budget_max) . ' (' . ucfirst($job->budget_type) . ')')
+@section('og_description', Str::limit(strip_tags($job->description), 160))
+@section('og_type', 'article')
+
+@section('structured_data')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org/",
+  "@type": "JobPosting",
+  "title": "{{ addslashes($job->title) }}",
+  "description": "{{ addslashes(strip_tags($job->description)) }}",
+  "identifier": {
+    "@type": "PropertyValue",
+    "name": "WorkForge",
+    "value": "{{ $job->id }}"
+  },
+  "datePosted": "{{ $job->created_at->toIso8601String() }}",
+  "employmentType": "CONTRACTOR",
+  "hiringOrganization": {
+    "@type": "Organization",
+    "name": "{{ addslashes($job->client->name ?? 'Verified Client') }}"
+  },
+  "jobLocationType": "TELECOMMUTE",
+  "baseSalary": {
+    "@type": "MonetaryAmount",
+    "currency": "USD",
+    "value": {
+      "@type": "QuantitativeValue",
+      "minValue": {{ $job->budget_min }},
+      "maxValue": {{ $job->budget_max }},
+      "unitText": "{{ $job->budget_type === 'hourly' ? 'HOUR' : 'PROJECT' }}"
+    }
+  }
+}
+</script>
+@endsection
+
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Breadcrumbs -->

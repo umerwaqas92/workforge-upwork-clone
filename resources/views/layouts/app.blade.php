@@ -5,8 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $title ?? 'WorkForge | The World\'s Work Marketplace' }}</title>
-    <meta name="description" content="Connect with top independent professionals, find high-paying freelance jobs, and manage escrow contracts securely.">
+    <title>@yield('title', $title ?? "WorkForge | The World's Work Marketplace")</title>
+    <meta name="description" content="@yield('meta_description', 'Hire top 1% independent talent or discover high-paying freelance projects with milestone escrow protection on WorkForge.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'freelance marketplace, hire developers, freelance jobs, upwork clone, milestone escrow, remote talent')">
+    <meta name="author" content="WorkForge Marketplace">
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    <!-- Favicon & Touch Icons -->
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="alternate icon" type="image/png" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ asset('favicon.svg') }}">
+
+    <!-- Open Graph / Facebook / WhatsApp / LinkedIn / Slack -->
+    <meta property="og:site_name" content="WorkForge Marketplace">
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="@yield('og_title', $title ?? "WorkForge | The World's Work Marketplace")">
+    <meta property="og:description" content="@yield('og_description', 'Hire top 1% independent talent or discover high-paying freelance projects with milestone escrow protection.')">
+    <meta property="og:image" content="@yield('og_image', asset('images/workforge-og.svg'))">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter Card Meta -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{{ url()->current() }}">
+    <meta name="twitter:title" content="@yield('og_title', $title ?? "WorkForge | The World's Work Marketplace")">
+    <meta name="twitter:description" content="@yield('og_description', 'Hire top 1% independent talent or discover high-paying freelance projects with milestone escrow protection.')">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/workforge-og.svg'))">
+
+    <!-- Schema.org Organization Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "WorkForge Marketplace",
+        "url": "{{ url('/') }}",
+        "logo": "{{ asset('favicon.svg') }}",
+        "sameAs": [
+            "https://github.com/umerwaqas92/workforge-upwork-clone"
+        ]
+    }
+    </script>
+    @yield('structured_data')
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -68,10 +108,7 @@
 
                 <!-- Right Actions -->
                 <div class="flex items-center gap-3">
-                    @guest
-                        <a href="{{ route('login') }}" class="text-sm font-medium text-slate-700 hover:text-emerald-600 px-3 py-2 transition">Log In</a>
-                        <a href="{{ route('register') }}" class="text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-full shadow-xs hover:shadow transition">Sign Up</a>
-                    @else
+                    @auth
                         @if(Auth::user()->isClient())
                             <a href="{{ route('jobs.create') }}" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-full shadow-xs transition">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -103,9 +140,8 @@
                                  x-cloak>
                                 <div class="px-4 py-2 border-b border-slate-100">
                                     <p class="text-[11px] text-slate-400 font-medium">Signed in as</p>
-                                    <p class="text-sm font-bold text-slate-900 truncate">{{ Auth::user()->name }}</p>
-                                    <p class="text-xs text-slate-500 truncate mt-0.5">{{ Auth::user()->email }}</p>
-                                    <span class="inline-block mt-1.5 text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/50">
+                                    <p class="text-xs font-bold text-slate-900 truncate">{{ Auth::user()->email }}</p>
+                                    <span class="inline-block mt-1 text-[10px] uppercase font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
                                         {{ ucfirst(Auth::user()->role) }}
                                     </span>
                                 </div>
@@ -122,6 +158,11 @@
                                 </form>
                             </div>
                         </div>
+                    @endauth
+
+                    @guest
+                        <a href="{{ route('login') }}" class="text-sm font-medium text-slate-700 hover:text-emerald-600 px-3 py-2 transition">Log In</a>
+                        <a href="{{ route('register') }}" class="text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-full shadow-xs hover:shadow transition">Sign Up</a>
                     @endguest
 
                     <!-- Mobile Menu Button -->

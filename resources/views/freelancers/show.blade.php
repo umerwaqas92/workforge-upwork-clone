@@ -1,5 +1,30 @@
 @extends('layouts.app')
 
+@section('title', $freelancer->name . ' — ' . ($freelancer->freelancerProfile?->title ?? 'Specialist') . ' | WorkForge')
+@section('meta_description', 'Hire ' . $freelancer->name . ' on WorkForge. Rate: $' . number_format($freelancer->freelancerProfile?->hourly_rate ?? 50, 2) . '/hr. ' . Str::limit(strip_tags($freelancer->freelancerProfile?->bio ?? ''), 120))
+@section('og_title', $freelancer->name . ' — ' . ($freelancer->freelancerProfile?->title ?? 'Freelancer') . ' ($' . number_format($freelancer->freelancerProfile?->hourly_rate ?? 50, 0) . '/hr)')
+@section('og_description', Str::limit(strip_tags($freelancer->freelancerProfile?->bio ?? ''), 160))
+@section('og_image', $freelancer->avatar_url)
+@section('og_type', 'profile')
+
+@section('structured_data')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org/",
+  "@type": "Person",
+  "name": "{{ addslashes($freelancer->name) }}",
+  "jobTitle": "{{ addslashes($freelancer->freelancerProfile?->title ?? 'Professional') }}",
+  "image": "{{ $freelancer->avatar_url }}",
+  "description": "{{ addslashes(strip_tags($freelancer->freelancerProfile?->bio ?? '')) }}",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "{{ addslashes($freelancer->city ?? 'Remote') }}",
+    "addressCountry": "{{ addslashes($freelancer->country ?? 'Global') }}"
+  }
+}
+</script>
+@endsection
+
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
