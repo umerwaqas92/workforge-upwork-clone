@@ -10,6 +10,48 @@
 
 ---
 
+## 📸 Visual Tour & Screenshots
+
+### 1. 🏠 Marketplace Home & Hero
+![Marketplace Home](docs/screenshots/01_homepage.png)
+
+---
+
+### 2. 🔍 Real-Time Job Search & Faceted Filters
+![Browse Jobs](docs/screenshots/02_browse_jobs.png)
+
+---
+
+### 3. 👤 Verified Freelancer Profile & Portfolio Gallery
+![Freelancer Profile](docs/screenshots/03_freelancer_profile.png)
+
+---
+
+### 4. 📝 Upwork-Style Profile Builder & Completeness Engine
+![Profile Builder](docs/screenshots/04_profile_builder.png)
+
+---
+
+### 5. 🛡️ Contract Workroom & Milestone Escrow Management
+![Contract Workroom](docs/screenshots/05_contract_workroom.png)
+
+---
+
+### 6. 💳 Financial Ledger & Wallet Center
+![Wallet Ledger](docs/screenshots/06_wallet_ledger.png)
+
+---
+
+### 7. 🦤 Dodo Payments Merchant of Record Checkout
+![Dodo Payments Checkout](docs/screenshots/07_dodo_checkout.png)
+
+---
+
+### 8. 👑 Super-Admin Control Panel & Platform Metrics
+![Admin Super Panel](docs/screenshots/08_admin_panel.png)
+
+---
+
 ## 🌟 Key Features & Systems
 
 ### 1. 🔍 Discovery & Marketplace Directory (SSR + SEO Optimized)
@@ -85,7 +127,7 @@ All accounts share the default password: `password`
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/workforge-upwork-clone.git
+git clone https://github.com/umerwaqas92/workforge-upwork-clone.git
 cd workforge-upwork-clone
 ```
 
