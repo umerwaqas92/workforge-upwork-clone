@@ -1,0 +1,91 @@
+<?php
+
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContractController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DodoPaymentController;
+use App\Http\Controllers\FreelancerController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\JobController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\ProposalController;
+use App\Http\Controllers\WalletController;
+use Illuminate\Support\Facades\Route;
+
+// Public Marketplace Routes (SSR & SEO Optimized)
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
+Route::get('/jobs/{slug}', [JobController::class, 'show'])->name('jobs.show');
+Route::get('/freelancers', [FreelancerController::class, 'index'])->name('freelancers.index');
+Route::get('/freelancers/{id}', [FreelancerController::class, 'show'])->name('freelancers.show');
+
+// Authentication Routes
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
+});
+
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/quick-login/{role}', [AuthController::class, 'quickLogin'])->name('quick.login');
+
+// Dodo Payments Webhook & Public Return
+Route::post('/payments/dodo/webhook', [DodoPaymentController::class, 'webhook'])->name('payments.dodo.webhook');
+Route::get('/payments/dodo/simulator', [DodoPaymentController::class, 'simulator'])->name('payments.dodo.simulator');
+
+// Authenticated User Routes (Blade + Livewire + Alpine.js)
+Route::middleware('auth')->group(function () {
+    // Dashboards & Settings
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/settings/profile', [DashboardController::class, 'editProfile'])->name('profile.edit');
+    Route::post('/settings/profile', [DashboardController::class, 'updateProfile'])->name('profile.update');
+
+    // Jobs Post & Save (Client & Freelancer)
+    Route::get('/post-job', [JobController::class, 'create'])->name('jobs.create');
+    Route::post('/post-job', [JobController::class, 'store'])->name('jobs.store');
+    Route::post('/jobs/{job}/save', [JobController::class, 'toggleSave'])->name('jobs.save');
+
+    // Proposals
+    Route::get('/jobs/{job:slug}/apply', [ProposalController::class, 'create'])->name('proposals.create');
+    Route::post('/jobs/{job:slug}/apply', [ProposalController::class, 'store'])->name('proposals.store');
+    Route::get('/proposals/{proposal}', [ProposalController::class, 'show'])->name('proposals.show');
+    Route::patch('/proposals/{proposal}/status', [ProposalController::class, 'updateStatus'])->name('proposals.status');
+
+    // Contracts, Milestones & Escrow
+    Route::get('/proposals/{proposal}/hire', [ContractController::class, 'createFromProposal'])->name('contracts.hire');
+    Route::post('/proposals/{proposal}/hire', [ContractController::class, 'storeHire'])->name('contracts.hire.store');
+    Route::get('/contracts/{contract}', [ContractController::class, 'show'])->name('contracts.show');
+    Route::post('/contracts/{contract}/complete', [ContractController::class, 'completeContract'])->name('contracts.complete');
+    Route::post('/contracts/{contract}/review', [ContractController::class, 'submitReview'])->name('contracts.review');
+    Route::post('/contracts/milestones/{milestone}/fund', [ContractController::class, 'fundMilestone'])->name('contracts.milestone.fund');
+    Route::post('/contracts/milestones/{milestone}/submit', [ContractController::class, 'submitWork'])->name('contracts.milestone.submit');
+    Route::post('/contracts/milestones/{milestone}/release', [ContractController::class, 'releasePayment'])->name('contracts.milestone.release');
+
+    // Dodo Payments Checkout & Return
+    Route::post('/payments/dodo/checkout', [DodoPaymentController::class, 'checkout'])->name('payments.dodo.checkout');
+    Route::get('/payments/dodo/return', [DodoPaymentController::class, 'returnUrl'])->name('payments.dodo.return');
+
+    // Wallet & Financial Ledger
+    Route::get('/wallet', [WalletController::class, 'index'])->name('wallet.index');
+    Route::post('/wallet/deposit', [WalletController::class, 'deposit'])->name('wallet.deposit');
+    Route::post('/wallet/payout', [WalletController::class, 'requestPayout'])->name('wallet.payout');
+
+    // Real-Time Chat Room
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::get('/messages/{conversation}', [MessageController::class, 'show'])->name('messages.show');
+    Route::post('/messages/start', [MessageController::class, 'start'])->name('messages.start');
+});
+
+// Admin Panel Routes
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/users', [AdminController::class, 'users'])->name('users');
+    Route::patch('/users/{user}/status', [AdminController::class, 'updateUserStatus'])->name('users.status');
+    Route::get('/jobs', [AdminController::class, 'jobs'])->name('jobs');
+    Route::patch('/jobs/{job}/status', [AdminController::class, 'updateJobStatus'])->name('jobs.status');
+    Route::get('/contracts', [AdminController::class, 'contracts'])->name('contracts');
+    Route::get('/payouts', [AdminController::class, 'payouts'])->name('payouts');
+    Route::patch('/payouts/{payout}/status', [AdminController::class, 'updatePayoutStatus'])->name('payouts.status');
+});
