@@ -137,17 +137,44 @@
             <a href="{{ route('jobs.index') }}" class="block py-2 text-base font-medium text-slate-700">Find Work</a>
             <a href="{{ route('freelancers.index') }}" class="block py-2 text-base font-medium text-slate-700">Find Talent</a>
             @auth
-                <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 mb-2">
+                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 mb-2">
                     <p class="text-xs font-bold text-slate-900">{{ Auth::user()->name }}</p>
-                    <p class="text-[11px] text-slate-500 truncate">{{ Auth::user()->email }}</p>
-                    <span class="inline-block mt-1 text-[10px] uppercase font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">{{ ucfirst(Auth::user()->role) }}</span>
+                    <p class="text-[11px] text-slate-500 truncate mt-0.5">{{ Auth::user()->email }}</p>
+                    <span class="inline-block mt-1.5 text-[10px] uppercase font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-full">{{ ucfirst(Auth::user()->role) }}</span>
                 </div>
-                <a href="{{ route('dashboard') }}" class="block py-2 text-base font-medium text-slate-700">Dashboard</a>
-                <a href="{{ route('messages.index') }}" class="block py-2 text-base font-medium text-slate-700">Messages</a>
-                <a href="{{ route('wallet.index') }}" class="block py-2 text-base font-medium text-slate-700">Wallet</a>
-                @if(Auth::user()->isClient())
-                    <a href="{{ route('jobs.create') }}" class="block py-2 text-base font-medium text-emerald-600 font-semibold">+ Post a Job</a>
+
+                @if(Auth::user()->isAdmin())
+                    <a href="{{ route('admin.dashboard') }}" class="block py-2.5 px-3 bg-slate-900 text-white rounded-xl text-sm font-bold flex items-center justify-between shadow-xs hover:bg-slate-800 transition">
+                        <span class="flex items-center gap-2">
+                            <span>👑</span>
+                            <span>Admin Super-Panel</span>
+                        </span>
+                        <span class="text-[10px] bg-emerald-600 px-2 py-0.5 rounded-md font-extrabold uppercase">Control</span>
+                    </a>
                 @endif
+
+                <a href="{{ route('dashboard') }}" class="block py-2 text-base font-medium text-slate-700 hover:text-emerald-600 transition">
+                    {{ Auth::user()->isFreelancer() ? 'Freelancer Dashboard' : (Auth::user()->isClient() ? 'Client Dashboard' : 'Marketplace Overview') }}
+                </a>
+                
+                @if(Auth::user()->isFreelancer())
+                    <a href="{{ route('freelancers.show', Auth::id()) }}" class="block py-2 text-base font-medium text-slate-700 hover:text-emerald-600 transition">Public Profile</a>
+                @endif
+
+                <a href="{{ route('messages.index') }}" class="block py-2 text-base font-medium text-slate-700 hover:text-emerald-600 transition">Messages</a>
+                <a href="{{ route('wallet.index') }}" class="block py-2 text-base font-medium text-slate-700 hover:text-emerald-600 transition">Billing & Wallet</a>
+                <a href="{{ route('profile.edit') }}" class="block py-2 text-base font-medium text-slate-700 hover:text-emerald-600 transition">Settings & Profile</a>
+                
+                @if(Auth::user()->isClient())
+                    <a href="{{ route('jobs.create') }}" class="block py-2.5 px-3 text-center bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition shadow-xs mt-2">+ Post a New Job</a>
+                @endif
+
+                <div class="border-t border-slate-100 pt-2 mt-2">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="block w-full text-left py-2 text-base font-semibold text-red-600 hover:text-red-700 transition">Log Out</button>
+                    </form>
+                </div>
             @endauth
         </div>
     </header>
