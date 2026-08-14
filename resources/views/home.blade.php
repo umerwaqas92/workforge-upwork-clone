@@ -49,8 +49,9 @@
                     @if($topHero)
                         <div class="bg-slate-800/90 backdrop-blur-md p-5 rounded-2xl border border-slate-700/60 shadow-xl text-white transform hover:-translate-y-1 transition duration-300">
                             <div class="flex items-center justify-between mb-3">
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                    ⭐ TOP RATED PLUS
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                    <svg class="w-3 h-3 text-amber-400 fill-amber-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                    <span>TOP RATED PLUS</span>
                                 </span>
                                 <span class="text-sm font-bold text-emerald-400">${{ number_format($topHero->freelancerProfile->hourly_rate ?? 75, 2) }}/hr</span>
                             </div>
@@ -98,15 +99,27 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach($categories as $category)
-            <a href="{{ route('jobs.index', ['selectedCategory' => $category->id]) }}" class="group bg-white p-6 rounded-2xl border border-slate-200/80 hover:border-emerald-500/50 hover:shadow-md transition duration-200">
-                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 group-hover:bg-emerald-600 group-hover:text-white transition font-bold">
-                    📁
+            <a href="{{ route('jobs.index', ['selectedCategory' => $category->id]) }}" class="group bg-white p-6 rounded-2xl border border-slate-200/80 hover:border-emerald-500/50 hover:shadow-lg transition duration-300">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 group-hover:bg-emerald-600 group-hover:text-white transition duration-300 shadow-xs">
+                    @if(str_contains($category->slug, 'dev') || str_contains($category->slug, 'it'))
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    @elseif(str_contains($category->slug, 'ai'))
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                    @elseif(str_contains($category->slug, 'design') || str_contains($category->slug, 'creative'))
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4 5 5 0 013-4.5V11a7 7 0 0113.33-3.07 7 7 0 011.67 4.57 5 5 0 01-3 4.5V17a4 4 0 01-4 4H7z"/></svg>
+                    @elseif(str_contains($category->slug, 'mobile'))
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                    @elseif(str_contains($category->slug, 'market') || str_contains($category->slug, 'sales'))
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    @else
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    @endif
                 </div>
-                <h3 class="font-bold text-slate-900 text-lg group-hover:text-emerald-600 transition">{{ $category->name }}</h3>
-                <p class="text-xs text-slate-500 mt-1 line-clamp-2">{{ $category->description }}</p>
+                <h3 class="font-bold text-slate-900 text-base group-hover:text-emerald-600 transition">{{ $category->name }}</h3>
+                <p class="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{{ $category->description }}</p>
                 <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-                    <span>{{ $category->jobs_count ?? 0 }} open jobs</span>
-                    <span class="text-emerald-600 font-semibold group-hover:translate-x-0.5 transition">&rarr;</span>
+                    <span class="font-medium">{{ $category->jobs_count ?? 0 }} open jobs</span>
+                    <span class="text-emerald-600 font-bold group-hover:translate-x-1 transition">&rarr;</span>
                 </div>
             </a>
         @endforeach
@@ -210,7 +223,11 @@
                 </div>
 
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-                    <span class="font-semibold text-slate-700">⭐ {{ $freelancer->rating }} ({{ $freelancer->rating_count }})</span>
+                    <span class="font-bold text-slate-800 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5 text-amber-400 fill-amber-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <span>{{ number_format($freelancer->rating, 1) }}</span>
+                        <span class="text-slate-400 text-[11px] font-normal">({{ $freelancer->rating_count }})</span>
+                    </span>
                     <a href="{{ route('freelancers.show', $freelancer->id) }}" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg font-medium transition">
                         Profile
                     </a>
