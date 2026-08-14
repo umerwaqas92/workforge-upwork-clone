@@ -74,6 +74,7 @@ Route::middleware('auth')->group(function () {
 
     // Real-Time Chat Room
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::get('/messages/start', fn() => redirect()->route('messages.index'));
     Route::get('/messages/{conversation}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/start', [MessageController::class, 'start'])->name('messages.start');
 });
