@@ -149,19 +149,59 @@ class MarketplaceTest extends TestCase
 
     public function test_direct_message_start(): void
     {
-        $client = User::where('role', 'client')->first();
         $freelancer = User::where('role', 'freelancer')->first();
+        $client = User::where('role', 'client')->first();
 
-        $response = $this->actingAs($client)->post('/messages/start', [
+        $response = $this->actingAs($client)->post(route('messages.start'), [
             'recipient_id' => $freelancer->id,
-            'subject' => 'Project Inquiry',
-            'message' => 'Hello, are you available for a project?',
+            'message' => 'Hello! Are you available for a project?'
         ]);
 
-        $response->assertRedirect();
+        $response->assertStatus(302);
+        $this->assertDatabaseHas('conversation_participants', [
+            'user_id' => $client->id,
+        ]);
+        $this->assertDatabaseHas('conversation_participants', [
+            'user_id' => $freelancer->id,
+        ]);
         $this->assertDatabaseHas('messages', [
             'sender_id' => $client->id,
-            'body' => 'Hello, are you available for a project?',
+            'body' => 'Hello! Are you available for a project?',
+        ]);
+    }
+
+    public function test_oauth_google_and_github_simulated_auth(): void
+    {
+        // 1. Test Redirect to simulator when keys not present
+        $response = $this->get(route('oauth.redirect', 'google'));
+        $response->assertStatus(200);
+        $response->assertSee('Authorize with Google');
+
+        // 2. Test GitHub simulated signup for Freelancer
+        $resGithub = $this->post(route('oauth.simulate', 'github'), [
+            'email' => 'torvalds@github.test',
+            'name' => 'Linus Torvalds',
+            'role' => 'freelancer',
+        ]);
+        $resGithub->assertRedirect(route('dashboard'));
+        $this->assertDatabaseHas('users', [
+            'email' => 'torvalds@github.test',
+            'role' => 'freelancer',
+            'auth_provider' => 'github',
+        ]);
+        $this->assertAuthenticated();
+
+        // 3. Test Google simulated signup for Client
+        $resGoogle = $this->post(route('oauth.simulate', 'google'), [
+            'email' => 'sundar@google.test',
+            'name' => 'Sundar Pichai',
+            'role' => 'client',
+        ]);
+        $resGoogle->assertRedirect(route('dashboard'));
+        $this->assertDatabaseHas('users', [
+            'email' => 'sundar@google.test',
+            'role' => 'client',
+            'auth_provider' => 'google',
         ]);
     }
 }

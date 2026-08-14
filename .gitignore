@@ -28,3 +28,5 @@ Thumbs.db
 /database/database.sqlite
 /database/database.sqlite-journal
 *.zip
+/scripts/deploy.env
+/scripts/.deploy_cache.json

@@ -31,6 +31,11 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/quick-login/{role}', [AuthController::class, 'quickLogin'])->name('quick.login');
 
+// 1-Click Social OAuth (Google & GitHub)
+Route::get('/auth/{provider}/redirect', [\App\Http\Controllers\OAuthController::class, 'redirect'])->name('oauth.redirect');
+Route::get('/auth/{provider}/callback', [\App\Http\Controllers\OAuthController::class, 'callback'])->name('oauth.callback');
+Route::post('/auth/{provider}/simulate', [\App\Http\Controllers\OAuthController::class, 'handleSimulatedAuth'])->name('oauth.simulate');
+
 // Dodo Payments Webhook & Public Return
 Route::post('/payments/dodo/webhook', [DodoPaymentController::class, 'webhook'])->name('payments.dodo.webhook');
 Route::get('/payments/dodo/simulator', [DodoPaymentController::class, 'simulator'])->name('payments.dodo.simulator');

@@ -9,6 +9,7 @@
         "php": "^8.3",
         "dodopayments/client": "^6.21",
         "laravel/framework": "^13.17",
+        "laravel/socialite": "^5.29",
         "laravel/tinker": "^3.0",
         "livewire/livewire": "^4.4"
     },

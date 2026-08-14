@@ -8,7 +8,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | This file is for storing the credentials for third party services such
-    | as Dodo Payments, Stripe, AWS, and more.
+    | as Dodo Payments, Google, GitHub, Stripe, AWS, and more.
     |
     */
 
@@ -16,6 +16,18 @@ return [
         'api_key' => env('DODO_PAYMENTS_API_KEY'),
         'environment' => env('DODO_PAYMENTS_ENVIRONMENT', 'test_mode'), // 'test_mode' or 'live_mode'
         'webhook_key' => env('DODO_PAYMENTS_WEBHOOK_KEY'),
+    ],
+
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', env('APP_URL') . '/auth/google/callback'),
+    ],
+
+    'github' => [
+        'client_id' => env('GITHUB_CLIENT_ID'),
+        'client_secret' => env('GITHUB_CLIENT_SECRET'),
+        'redirect' => env('GITHUB_REDIRECT_URI', env('APP_URL') . '/auth/github/callback'),
     ],
 
     'postmark' => [

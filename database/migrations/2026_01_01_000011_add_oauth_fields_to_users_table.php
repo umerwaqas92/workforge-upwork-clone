@@ -1,0 +1,31 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('google_id', 100)->nullable()->index()->after('email');
+            $table->string('github_id', 100)->nullable()->index()->after('google_id');
+            $table->string('auth_provider', 50)->default('email')->after('github_id');
+            $table->string('provider_avatar', 255)->nullable()->after('avatar');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn(['google_id', 'github_id', 'auth_provider', 'provider_avatar']);
+        });
+    }
+};

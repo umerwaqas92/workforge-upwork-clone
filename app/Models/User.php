@@ -16,6 +16,10 @@ class User extends Authenticatable
         'password',
         'role', // client, freelancer, admin
         'avatar',
+        'google_id',
+        'github_id',
+        'auth_provider',
+        'provider_avatar',
         'phone',
         'status', // active, suspended, pending
         'country',
