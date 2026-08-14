@@ -204,4 +204,33 @@ class MarketplaceTest extends TestCase
             'auth_provider' => 'google',
         ]);
     }
+
+    public function test_livewire_chat_typing_indicator(): void
+    {
+        $conversation = \App\Models\Conversation::first();
+        $participants = $conversation->participants;
+        $user1 = $participants[0];
+        $user2 = $participants[1];
+
+        // 1. User 1 types
+        $this->actingAs($user1);
+        \Livewire\Livewire::test(\App\Livewire\ChatRoom::class, ['conversationId' => $conversation->id])
+            ->call('userTyping');
+
+        // 2. User 2 views chat and sees User 1 typing
+        $this->actingAs($user2);
+        \Livewire\Livewire::test(\App\Livewire\ChatRoom::class, ['conversationId' => $conversation->id])
+            ->assertSee('is typing...');
+
+        // 3. User 1 sends message -> typing cleared
+        $this->actingAs($user1);
+        \Livewire\Livewire::test(\App\Livewire\ChatRoom::class, ['conversationId' => $conversation->id])
+            ->set('messageBody', 'Ready to begin!')
+            ->call('sendMessage');
+
+        // 4. User 2 views chat and typing is gone
+        $this->actingAs($user2);
+        \Livewire\Livewire::test(\App\Livewire\ChatRoom::class, ['conversationId' => $conversation->id])
+            ->assertDontSee('is typing...');
+    }
 }
