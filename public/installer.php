@@ -40,8 +40,10 @@ $app = require_once $bootstrapPath;
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
+\Illuminate\Support\Facades\Schema::defaultStringLength(191);
+
 $dbHost = config('database.connections.mysql.host') ?? 'sql301.infinityfree.com';
-$dbName = config('database.connections.mysql.database') ?? 'if0_42654988_workforge';
+$dbName = config('database.connections.mysql.database') ?? 'if0_42654988_workforgdedge';
 
 ?>
 <!DOCTYPE html>
@@ -68,8 +70,10 @@ $dbName = config('database.connections.mysql.database') ?? 'if0_42654988_workfor
 
         <?php
         try {
-            // Run migrations with force flag
-            $exitCode = $kernel->call('migrate', ['--force' => true, '--seed' => true]);
+            \Illuminate\Support\Facades\Schema::defaultStringLength(191);
+            
+            // Run migrations fresh with seeders
+            $exitCode = $kernel->call('migrate:fresh', ['--force' => true, '--seed' => true]);
             $output = $kernel->output();
 
             echo "<h3>Migration Console Output:</h3>";
@@ -82,14 +86,6 @@ $dbName = config('database.connections.mysql.database') ?? 'if0_42654988_workfor
         } catch (\Throwable $e) {
             echo "<h3 style='color:#f87171;'>Setup Note:</h3>";
             echo "<pre style='color:#f87171;'>" . htmlspecialchars($e->getMessage()) . "</pre>";
-            
-            echo "<div style='background:#0f172a; padding:16px; border-radius:8px; margin-top:16px; border:1px solid #334155;'>";
-            echo "<p style='color:#fbbf24; font-weight:bold; margin-top:0;'>💡 Quick Fix Checklist:</p>";
-            echo "<ol style='color:#cbd5e1; font-size:14px; padding-left:20px; line-height:1.8;'>";
-            echo "<li>Make sure you created the database in your InfinityFree cPanel &rarr; <strong>MySQL Databases</strong> (e.g. <code>if0_42654988_workforge</code>).</li>";
-            echo "<li>If your database name is different, update <code>DB_DATABASE</code> in your <code>.env</code> file.</li>";
-            echo "</ol>";
-            echo "</div>";
         }
         ?>
     </div>
