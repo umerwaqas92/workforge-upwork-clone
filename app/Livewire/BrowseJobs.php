@@ -77,6 +77,9 @@ class BrowseJobs extends Component
             $query->whereIn('experience_level', $this->selectedExperience);
         }
 
+        // Pin featured jobs to the top
+        $query->orderByDesc('is_featured');
+
         if ($this->sortBy === 'budget_high') {
             $query->orderByRaw('COALESCE(budget_max, hourly_rate_max, 0) DESC');
         } elseif ($this->sortBy === 'proposals_low') {

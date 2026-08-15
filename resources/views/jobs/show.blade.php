@@ -149,15 +149,22 @@
                     </div>
 
                     <div class="space-y-4">
-                        @forelse($job->proposals as $proposal)
-                            <div class="p-5 rounded-2xl border border-slate-200 hover:border-emerald-500/50 transition">
+                        @forelse($job->proposals->sortByDesc('is_boosted') as $proposal)
+                            <div class="p-5 rounded-2xl border transition {{ $proposal->is_boosted ? 'bg-gradient-to-r from-purple-500/[0.03] via-white to-purple-500/[0.03] border-purple-300 shadow-md shadow-purple-500/10 ring-1 ring-purple-400/40 hover:border-purple-400' : 'border-slate-200 hover:border-emerald-500/50' }}">
                                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">
                                     <div class="flex items-center gap-3">
                                         <img src="{{ $proposal->freelancer->avatar_url }}" alt="{{ $proposal->freelancer->name }}" class="w-12 h-12 rounded-2xl object-cover border border-slate-200">
                                         <div>
-                                            <a href="{{ route('freelancers.show', $proposal->freelancer_id) }}" class="font-bold text-slate-900 hover:text-emerald-600 text-base">
-                                                {{ $proposal->freelancer->name }}
-                                            </a>
+                                            <div class="flex items-center gap-2">
+                                                <a href="{{ route('freelancers.show', $proposal->freelancer_id) }}" class="font-bold text-slate-900 hover:text-emerald-600 text-base">
+                                                    {{ $proposal->freelancer->name }}
+                                                </a>
+                                                @if($proposal->is_boosted)
+                                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs">
+                                                        <span>🚀</span> PROMOTED
+                                                    </span>
+                                                @endif
+                                            </div>
                                             <p class="text-xs text-slate-500">{{ $proposal->freelancer->freelancerProfile->title ?? 'Freelancer' }} • {{ $proposal->freelancer->country }}</p>
                                         </div>
                                     </div>

@@ -72,7 +72,11 @@ class JobController extends Controller
             'weekly_hours' => 'nullable|string',
             'skills' => 'nullable|array',
             'skills.*' => 'exists:skills,id',
+            'is_featured' => 'nullable|boolean',
         ]);
+
+        $isFeatured = $request->boolean('is_featured');
+        $featuredUntil = $isFeatured ? now()->addDays(30) : null;
 
         $job = JobPosting::create([
             'client_id' => Auth::id(),
@@ -89,6 +93,8 @@ class JobController extends Controller
             'duration' => $validated['duration'],
             'weekly_hours' => $validated['weekly_hours'] ?? 'more_than_30',
             'status' => 'open',
+            'is_featured' => $isFeatured,
+            'featured_until' => $featuredUntil,
             'published_at' => now(),
         ]);
 

@@ -13,6 +13,7 @@ class HomeController extends Controller
         $categories = Category::withCount('jobs')->orderBy('is_popular', 'desc')->orderBy('sort_order')->take(8)->get();
         $featuredJobs = JobPosting::with(['client.clientProfile', 'category', 'skills'])
             ->where('status', 'open')
+            ->orderByDesc('is_featured')
             ->latest('published_at')
             ->take(6)
             ->get();

@@ -111,10 +111,26 @@
             @enderror
         </div>
 
+        <!-- Boost Proposal Option (Paid Connects) -->
+        <div class="p-6 rounded-3xl bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent border border-purple-300/80 space-y-3">
+            <div class="flex items-start gap-4">
+                <input type="checkbox" name="boost_proposal" id="boost_proposal" value="1" class="mt-1 h-5 w-5 text-purple-600 focus:ring-purple-500 border-purple-300 rounded cursor-pointer">
+                <div class="space-y-1">
+                    <label for="boost_proposal" class="text-sm font-extrabold text-slate-900 cursor-pointer flex items-center gap-2">
+                        <span>🚀 Boost this Proposal (+{{ \App\Models\PlatformSetting::get('boost_proposal_connects', 10) }} Connects)</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-purple-600 text-white tracking-wider">Top of Inbox</span>
+                    </label>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Promote your bid to the top of the client's proposal inbox with a highlighted purple badge to stand out from other applicants and get viewed first.
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-4">
             <a href="{{ route('jobs.show', $job->slug) }}" class="text-sm font-semibold text-slate-600 hover:text-slate-800">Cancel</a>
             <button type="submit" class="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md transition">
-                Submit Proposal
+                Submit Proposal &rarr;
             </button>
         </div>
     </form>

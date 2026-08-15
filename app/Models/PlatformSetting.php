@@ -100,6 +100,22 @@ class PlatformSetting extends Model
                 'description' => 'Complimentary bidding tokens credited to new freelancer accounts upon registration.',
             ],
             [
+                'key' => 'featured_job_price_usd',
+                'value' => '29.99',
+                'type' => 'float',
+                'group' => 'monetization',
+                'label' => 'Featured Job Listing Price ($)',
+                'description' => 'Upcharge fee charged to clients to highlight their job on the homepage and pin to top of browse feed.',
+            ],
+            [
+                'key' => 'boost_proposal_connects',
+                'value' => '10',
+                'type' => 'integer',
+                'group' => 'monetization',
+                'label' => 'Boost Proposal Connects (Tokens)',
+                'description' => 'Additional bidding tokens required for a freelancer to promote their proposal to the top of client inbox.',
+            ],
+            [
                 'key' => 'min_payout_amount',
                 'value' => '50.0',
                 'type' => 'float',

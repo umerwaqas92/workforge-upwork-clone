@@ -292,4 +292,42 @@ class MarketplaceTest extends TestCase
         $res->assertSee('Total Platform Revenue');
         $res->assertSee('Platform Fee Streams Breakdown');
     }
+
+    public function test_featured_job_and_boosted_proposal_monetization(): void
+    {
+        $client = \App\Models\User::where('role', 'client')->first();
+        $freelancer = \App\Models\User::where('role', 'freelancer')->where('id', '!=', 5)->first();
+        $category = \App\Models\Category::first();
+
+        // 1. Client creates a FEATURED Job
+        $jobRes = $this->actingAs($client)->post(route('jobs.store'), [
+            'title' => 'VIP Enterprise Cloud Migration and Hardening',
+            'category_id' => $category->id,
+            'description' => 'We need an expert cloud engineer to migrate our entire infrastructure to AWS with high availability.',
+            'type' => 'fixed_price',
+            'budget_min' => 5000,
+            'budget_max' => 8000,
+            'experience_level' => 'expert',
+            'duration' => '1_to_3_months',
+            'is_featured' => 1,
+        ]);
+
+        $jobRes->assertRedirect();
+        $job = \App\Models\JobPosting::where('title', 'VIP Enterprise Cloud Migration and Hardening')->first();
+        $this->assertNotNull($job);
+        $this->assertTrue((bool)$job->is_featured);
+
+        // 2. Freelancer submits a BOOSTED proposal
+        $propRes = $this->actingAs($freelancer)->post(route('proposals.store', $job->slug), [
+            'bid_amount' => 6500,
+            'cover_letter' => 'I have 10+ years architecting enterprise AWS solutions. I will boost this bid to demonstrate strong commitment.',
+            'boost_proposal' => 1,
+        ]);
+
+        $propRes->assertRedirect();
+        $proposal = \App\Models\Proposal::where('job_posting_id', $job->id)->where('freelancer_id', $freelancer->id)->first();
+        $this->assertNotNull($proposal);
+        $this->assertTrue((bool)$proposal->is_boosted);
+        $this->assertEquals(10, $proposal->boosted_connects);
+    }
 }

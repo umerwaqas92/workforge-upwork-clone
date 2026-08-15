@@ -22,6 +22,8 @@ class Proposal extends Model
         'attachments',
         'status', // pending, shortlisted, accepted, rejected, withdrawn
         'client_seen',
+        'is_boosted',
+        'boosted_connects',
     ];
 
     protected function casts(): array
@@ -35,6 +37,8 @@ class Proposal extends Model
             'milestones' => 'array',
             'attachments' => 'array',
             'client_seen' => 'boolean',
+            'is_boosted' => 'boolean',
+            'boosted_connects' => 'integer',
         ];
     }
 

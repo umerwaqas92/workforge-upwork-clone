@@ -260,10 +260,26 @@
             </div>
         </div>
 
+        <!-- Featured Job Listing Upgrade Option -->
+        <div class="p-6 rounded-3xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-300/80 space-y-3">
+            <div class="flex items-start gap-4">
+                <input type="checkbox" name="is_featured" id="is_featured" value="1" class="mt-1 h-5 w-5 text-amber-600 focus:ring-amber-500 border-amber-300 rounded cursor-pointer">
+                <div class="space-y-1">
+                    <label for="is_featured" class="text-sm font-extrabold text-slate-900 cursor-pointer flex items-center gap-2">
+                        <span>✨ Upgrade to Featured Job Listing (${{ number_format(\App\Models\PlatformSetting::get('featured_job_price_usd', 29.99), 2) }})</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500 text-white tracking-wider">3x Faster Hires</span>
+                    </label>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Pin your job to the very top of search results, highlight it with a golden badge, and feature it on the homepage for 30 days to attract the top 1% of elite vetted talent.
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-4">
             <a href="{{ route('jobs.index') }}" class="text-sm font-semibold text-slate-600 hover:text-slate-800">Cancel</a>
             <button type="submit" class="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md transition">
-                Publish Job Post
+                Publish Job Post &rarr;
             </button>
         </div>
     </form>

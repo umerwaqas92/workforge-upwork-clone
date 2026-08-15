@@ -85,16 +85,23 @@
         <!-- Job Cards -->
         <div class="space-y-3">
             @forelse($jobs as $job)
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 hover:border-emerald-500/50 hover:shadow-md transition duration-200">
+                <div class="bg-white p-6 rounded-2xl border transition duration-200 {{ $job->is_featured ? 'bg-gradient-to-r from-amber-500/[0.03] via-white to-amber-500/[0.03] border-amber-300 shadow-md shadow-amber-500/10 ring-1 ring-amber-400/40 hover:border-amber-400' : 'border-slate-200/80 hover:border-emerald-500/50 hover:shadow-md' }}">
                     <div class="flex items-start justify-between gap-4 mb-2">
                         <div>
-                            <span class="text-xs text-slate-400">Posted {{ $job->published_at ? $job->published_at->diffForHumans() : 'recently' }}</span>
-                            <a href="{{ route('jobs.show', $job->slug) }}" class="block text-lg font-bold text-slate-900 hover:text-emerald-600 transition mt-0.5">
+                            <div class="flex items-center gap-2">
+                                @if($job->is_featured)
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-xs">
+                                        <span>✨</span> FEATURED
+                                    </span>
+                                @endif
+                                <span class="text-xs text-slate-400">Posted {{ $job->published_at ? $job->published_at->diffForHumans() : 'recently' }}</span>
+                            </div>
+                            <a href="{{ route('jobs.show', $job->slug) }}" class="block text-lg font-bold text-slate-900 hover:text-emerald-600 transition mt-1">
                                 {{ $job->title }}
                             </a>
                         </div>
                         <div class="text-right shrink-0">
-                            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700">
+                            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold {{ $job->is_featured ? 'bg-amber-100 text-amber-900 border border-amber-200' : 'bg-emerald-50 text-emerald-700' }}">
                                 {{ $job->budget_formatted }}
                             </span>
                             <span class="block text-[11px] text-slate-400 mt-1 capitalize">{{ str_replace('_', ' ', $job->type) }}</span>

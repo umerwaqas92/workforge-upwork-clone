@@ -41,12 +41,16 @@ class ProposalController extends Controller
             'cover_letter' => 'required|string|min:20',
             'milestone_titles' => 'nullable|array',
             'milestone_amounts' => 'nullable|array',
+            'boost_proposal' => 'nullable|boolean',
         ]);
 
-        $feePercent = 0.10; // 10% platform fee
+        $feePercent = (float) \App\Models\PlatformSetting::get('platform_fee_percent', 10.0) / 100;
         $bidAmount = (float) $validated['bid_amount'];
         $platformFee = round($bidAmount * $feePercent, 2);
         $receiveAmount = round($bidAmount - $platformFee, 2);
+
+        $isBoosted = $request->boolean('boost_proposal');
+        $boostedConnects = $isBoosted ? (int) \App\Models\PlatformSetting::get('boost_proposal_connects', 10) : 0;
 
         $milestones = [];
         if (!empty($validated['milestone_titles'])) {
@@ -70,6 +74,8 @@ class ProposalController extends Controller
             'cover_letter' => $validated['cover_letter'],
             'milestones' => !empty($milestones) ? $milestones : null,
             'status' => 'pending',
+            'is_boosted' => $isBoosted,
+            'boosted_connects' => $boostedConnects,
         ]);
 
         $job->increment('proposals_count');

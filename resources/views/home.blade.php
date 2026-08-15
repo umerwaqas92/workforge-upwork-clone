@@ -143,11 +143,18 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             @foreach($featuredJobs as $job)
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 hover:border-emerald-500/40 hover:shadow-md transition duration-200 flex flex-col justify-between">
+                <div class="bg-white p-6 rounded-2xl border transition duration-200 flex flex-col justify-between {{ $job->is_featured ? 'bg-gradient-to-r from-amber-500/[0.03] via-white to-amber-500/[0.03] border-amber-300 shadow-md shadow-amber-500/10 ring-1 ring-amber-400/40 hover:border-amber-400' : 'border-slate-200/80 hover:border-emerald-500/40 hover:shadow-md' }}">
                     <div>
                         <div class="flex items-center justify-between gap-4 text-xs text-slate-500 mb-2">
-                            <span>Posted {{ $job->published_at ? $job->published_at->diffForHumans() : 'recently' }}</span>
-                            <span class="font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">
+                            <div class="flex items-center gap-2">
+                                @if($job->is_featured)
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-xs">
+                                        <span>✨</span> FEATURED
+                                    </span>
+                                @endif
+                                <span>Posted {{ $job->published_at ? $job->published_at->diffForHumans() : 'recently' }}</span>
+                            </div>
+                            <span class="font-bold {{ $job->is_featured ? 'text-amber-900 bg-amber-100 border border-amber-200' : 'text-emerald-700 bg-emerald-50' }} px-2.5 py-0.5 rounded-full">
                                 {{ $job->budget_formatted }}
                             </span>
                         </div>

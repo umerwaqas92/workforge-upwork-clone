@@ -111,11 +111,43 @@ Route::get('/cron/recalculate-badges', function () {
         }
     });
 
+    \Illuminate\Support\Facades\Schema::table('job_postings', function (\Illuminate\Database\Schema\Blueprint $table) {
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('job_postings', 'is_featured')) {
+            $table->boolean('is_featured')->default(false)->after('status');
+        }
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('job_postings', 'featured_until')) {
+            $table->timestamp('featured_until')->nullable()->after('is_featured');
+        }
+    });
+
+    \Illuminate\Support\Facades\Schema::table('proposals', function (\Illuminate\Database\Schema\Blueprint $table) {
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('proposals', 'is_boosted')) {
+            $table->boolean('is_boosted')->default(false)->after('status');
+        }
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('proposals', 'boosted_connects')) {
+            $table->integer('boosted_connects')->default(0)->after('is_boosted');
+        }
+    });
+
+    if (!\Illuminate\Support\Facades\Schema::hasTable('platform_settings')) {
+        \Illuminate\Support\Facades\Schema::create('platform_settings', function (\Illuminate\Database\Schema\Blueprint $table) {
+            $table->id();
+            $table->string('key')->unique();
+            $table->text('value')->nullable();
+            $table->string('type')->default('string');
+            $table->string('group')->default('monetization');
+            $table->string('label');
+            $table->string('description')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    \App\Models\PlatformSetting::seedDefaults();
     \Illuminate\Support\Facades\Artisan::call('freelancers:recalculate-badges');
     
     return response()->json([
         'status' => 'success',
-        'message' => 'Freelancer badges recalculated successfully!',
+        'message' => 'Freelancer badges recalculated & database schema synchronized successfully!',
         'output' => \Illuminate\Support\Facades\Artisan::output(),
     ]);
 })->name('cron.badges');
