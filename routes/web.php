@@ -98,6 +98,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/contracts', [AdminController::class, 'contracts'])->name('contracts');
     Route::get('/payouts', [AdminController::class, 'payouts'])->name('payouts');
     Route::patch('/payouts/{payout}/status', [AdminController::class, 'updatePayoutStatus'])->name('payouts.status');
+    Route::get('/revenue', [AdminController::class, 'revenue'])->name('revenue');
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
     Route::post('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
 });

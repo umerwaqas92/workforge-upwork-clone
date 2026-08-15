@@ -280,4 +280,16 @@ class MarketplaceTest extends TestCase
         $this->assertEquals(0.20, \App\Models\PlatformSetting::get('connect_cost_usd'));
         $this->assertEquals(100.0, \App\Models\PlatformSetting::get('min_payout_amount'));
     }
+
+    public function test_admin_revenue_hub_and_ledger(): void
+    {
+        $admin = \App\Models\User::where('role', 'admin')->first();
+
+        // 1. Visit Revenue Hub
+        $res = $this->actingAs($admin)->get(route('admin.revenue'));
+        $res->assertStatus(200);
+        $res->assertSee('Platform Financials');
+        $res->assertSee('Total Platform Revenue');
+        $res->assertSee('Platform Fee Streams Breakdown');
+    }
 }

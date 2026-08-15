@@ -267,4 +267,107 @@ class AdminController extends Controller
 
         return back()->with('success', 'Platform settings updated successfully and cached globally!');
     }
+
+    public function revenue(Request $request)
+    {
+        $platformFeePercent = (float) \App\Models\PlatformSetting::get('platform_fee_percent', 10.0);
+        
+        // 1. Core Financial Metrics
+        $totalContractVolume = (float) Contract::sum('amount');
+        $totalEscrowLocked = (float) \App\Models\Wallet::sum('escrow_balance');
+        $totalFreelancerEarnings = (float) \App\Models\FreelancerProfile::sum('total_earnings');
+        
+        // Contract Take-Rate Revenue
+        $contractTakeRateRevenue = Transaction::where('type', 'platform_fee')->sum('amount');
+        if ($contractTakeRateRevenue == 0 && $totalContractVolume > 0) {
+            // Fallback estimation based on active rate if legacy transactions exist
+            $contractTakeRateRevenue = round($totalContractVolume * ($platformFeePercent / 100), 2);
+        }
+
+        // Payout Fees Collected
+        $payoutFeesRevenue = (float) Transaction::where('type', 'payout')->sum('fee');
+        
+        // Deposit Surcharges Collected
+        $depositFeesRevenue = (float) Transaction::where('type', 'deposit')->sum('fee');
+        
+        // Connects Sales Revenue
+        $connectsRevenue = (float) Transaction::where('type', 'connects_purchase')->sum('amount');
+
+        // Total Net Platform Earnings
+        $totalPlatformRevenue = $contractTakeRateRevenue + $payoutFeesRevenue + $depositFeesRevenue + $connectsRevenue;
+
+        // Gross Marketplace Volume (GMV)
+        $grossMarketplaceVolume = $totalContractVolume + Transaction::where('type', 'deposit')->sum('amount');
+
+        // Completed Payouts to Freelancers
+        $processedPayoutsTotal = (float) PayoutRequest::where('status', 'processed')->sum('amount');
+
+        // Revenue Breakdown Percentages
+        $feeStreams = [
+            'contracts' => [
+                'label' => 'Contract Take-Rate Commission (' . $platformFeePercent . '%)',
+                'amount' => $contractTakeRateRevenue,
+                'pct' => $totalPlatformRevenue > 0 ? round(($contractTakeRateRevenue / $totalPlatformRevenue) * 100, 1) : 100,
+                'icon' => '🥇',
+                'color' => 'emerald',
+            ],
+            'deposits' => [
+                'label' => 'Client Deposit Surcharges',
+                'amount' => $depositFeesRevenue,
+                'pct' => $totalPlatformRevenue > 0 ? round(($depositFeesRevenue / $totalPlatformRevenue) * 100, 1) : 0,
+                'icon' => '💳',
+                'color' => 'blue',
+            ],
+            'connects' => [
+                'label' => 'Proposal Connects Token Sales',
+                'amount' => $connectsRevenue,
+                'pct' => $totalPlatformRevenue > 0 ? round(($connectsRevenue / $totalPlatformRevenue) * 100, 1) : 0,
+                'icon' => '🎟️',
+                'color' => 'purple',
+            ],
+            'payouts' => [
+                'label' => 'Withdrawal Processing Fees',
+                'amount' => $payoutFeesRevenue,
+                'pct' => $totalPlatformRevenue > 0 ? round(($payoutFeesRevenue / $totalPlatformRevenue) * 100, 1) : 0,
+                'icon' => '💸',
+                'color' => 'amber',
+            ],
+        ];
+
+        // 2. Revenue Audit Ledger Query
+        $ledgerQuery = Transaction::with(['user', 'wallet'])
+            ->where(function ($q) {
+                $q->where('type', 'platform_fee')
+                  ->orWhere('type', 'connects_purchase')
+                  ->orWhere('fee', '>', 0)
+                  ->orWhere('type', 'escrow_release');
+            });
+
+        if ($request->filled('type')) {
+            if ($request->input('type') === 'platform_fee') {
+                $ledgerQuery->where('type', 'platform_fee');
+            } elseif ($request->input('type') === 'payout_fee') {
+                $ledgerQuery->where('type', 'payout')->where('fee', '>', 0);
+            } elseif ($request->input('type') === 'deposit_fee') {
+                $ledgerQuery->where('type', 'deposit')->where('fee', '>', 0);
+            }
+        }
+
+        $ledger = $ledgerQuery->latest()->paginate(15);
+
+        return view('admin.revenue', compact(
+            'totalPlatformRevenue',
+            'contractTakeRateRevenue',
+            'payoutFeesRevenue',
+            'depositFeesRevenue',
+            'connectsRevenue',
+            'grossMarketplaceVolume',
+            'totalEscrowLocked',
+            'totalFreelancerEarnings',
+            'processedPayoutsTotal',
+            'feeStreams',
+            'ledger',
+            'platformFeePercent'
+        ));
+    }
 }

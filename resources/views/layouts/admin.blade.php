@@ -86,6 +86,11 @@
                 <span class="font-bold text-sm">Payout Requests</span>
             </a>
 
+            <a href="{{ route('admin.revenue') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.revenue') ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/70' }}">
+                <span class="text-base">📈</span>
+                <span class="font-bold text-sm">Revenue & Fees</span>
+            </a>
+
             <a href="{{ route('admin.settings') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.settings') ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/70' }}">
                 <span class="text-base">⚙️</span>
                 <span class="font-bold text-sm">Platform Settings</span>
