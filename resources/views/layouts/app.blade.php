@@ -22,7 +22,7 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:title" content="@yield('og_title', $title ?? "WorkForge | The World's Work Marketplace")">
     <meta property="og:description" content="@yield('og_description', 'Hire top 1% independent talent or discover high-paying freelance projects with milestone escrow protection.')">
-    <meta property="og:image" content="@yield('og_image', asset('images/workforge-og.svg'))">
+    <meta property="og:image" content="@yield('og_image', asset('images/workforge-og.png'))">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
 
@@ -31,7 +31,7 @@
     <meta name="twitter:url" content="{{ url()->current() }}">
     <meta name="twitter:title" content="@yield('og_title', $title ?? "WorkForge | The World's Work Marketplace")">
     <meta name="twitter:description" content="@yield('og_description', 'Hire top 1% independent talent or discover high-paying freelance projects with milestone escrow protection.')">
-    <meta name="twitter:image" content="@yield('og_image', asset('images/workforge-og.svg'))">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/workforge-og.png'))">
 
     <!-- Schema.org Organization Structured Data -->
     <script type="application/ld+json">
@@ -59,18 +59,18 @@
 <body class="min-h-full flex flex-col font-sans bg-slate-50 text-slate-900 selection:bg-emerald-500 selection:text-white" x-data="{ mobileMenuOpen: false, userDropdownOpen: false }">
 
     <!-- Quick Role Switcher Banner for Easy Demo Testing -->
-    <div class="bg-slate-900 text-slate-300 text-xs px-4 py-1.5 border-b border-slate-800 flex items-center justify-between">
-        <div class="flex items-center gap-2">
+    <div class="bg-slate-900 text-slate-300 text-[11px] sm:text-xs px-3 sm:px-4 py-2 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-1.5">
             <span class="inline-flex items-center gap-1 font-medium text-emerald-400">
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                Demo Environment Quick Switcher:
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                <span>Demo Switcher:</span>
             </span>
-            <span class="hidden sm:inline text-slate-400">Switch persona instantly to test complete marketplace workflows:</span>
+            <span class="hidden md:inline text-slate-400">Switch persona instantly to test workflows:</span>
         </div>
-        <div class="flex items-center gap-2">
-            <a href="{{ route('quick.login', 'client') }}" class="px-2 py-0.5 rounded {{ Auth::check() && Auth::user()->isClient() ? 'bg-emerald-600 text-white font-semibold' : 'bg-slate-800 hover:bg-slate-700 text-slate-200' }} transition">Client (Marcus)</a>
-            <a href="{{ route('quick.login', 'freelancer') }}" class="px-2 py-0.5 rounded {{ Auth::check() && Auth::user()->isFreelancer() ? 'bg-emerald-600 text-white font-semibold' : 'bg-slate-800 hover:bg-slate-700 text-slate-200' }} transition">Freelancer (Alex)</a>
-            <a href="{{ route('quick.login', 'admin') }}" class="px-2 py-0.5 rounded {{ Auth::check() && Auth::user()->isAdmin() ? 'bg-emerald-600 text-white font-semibold' : 'bg-slate-800 hover:bg-slate-700 text-slate-200' }} transition">Admin Panel</a>
+        <div class="flex items-center gap-1.5 overflow-x-auto max-w-full pb-0.5 sm:pb-0">
+            <a href="{{ route('quick.login', 'client') }}" class="px-2 py-0.5 rounded text-[11px] font-medium whitespace-nowrap {{ Auth::check() && Auth::user()->isClient() ? 'bg-emerald-600 text-white font-bold' : 'bg-slate-800 hover:bg-slate-700 text-slate-200' }} transition">Client</a>
+            <a href="{{ route('quick.login', 'freelancer') }}" class="px-2 py-0.5 rounded text-[11px] font-medium whitespace-nowrap {{ Auth::check() && Auth::user()->isFreelancer() ? 'bg-emerald-600 text-white font-bold' : 'bg-slate-800 hover:bg-slate-700 text-slate-200' }} transition">Freelancer</a>
+            <a href="{{ route('quick.login', 'admin') }}" class="px-2 py-0.5 rounded text-[11px] font-medium whitespace-nowrap {{ Auth::check() && Auth::user()->isAdmin() ? 'bg-emerald-600 text-white font-bold' : 'bg-slate-800 hover:bg-slate-700 text-slate-200' }} transition">Admin</a>
         </div>
     </div>
 
@@ -116,10 +116,6 @@
                             </a>
                         @endif
 
-                        @if(Auth::user()->isAdmin())
-                            <a href="{{ route('admin.dashboard') }}" class="text-xs bg-slate-900 text-white font-medium px-3 py-1.5 rounded-lg hover:bg-slate-800 transition">Admin Panel</a>
-                        @endif
-
                         <!-- Profile Dropdown -->
                         <div class="relative ml-2" @click.away="userDropdownOpen = false">
                             <button @click="userDropdownOpen = !userDropdownOpen" type="button" class="flex items-center gap-2 p-1 rounded-full hover:ring-2 hover:ring-emerald-500/30 transition focus:outline-none">
@@ -136,7 +132,7 @@
                                  x-transition:leave="transition ease-in duration-75" 
                                  x-transition:leave-start="transform opacity-100 scale-100" 
                                  x-transition:leave-end="transform opacity-0 scale-95" 
-                                 class="absolute right-0 mt-2 w-56 rounded-2xl bg-white shadow-xl border border-slate-100 py-2 z-50 text-slate-700"
+                                 class="absolute right-0 mt-2 w-56 rounded-2xl bg-white shadow-xl border border-slate-100 py-2 z-50 text-slate-700 space-y-1"
                                  x-cloak>
                                 <div class="px-4 py-2 border-b border-slate-100">
                                     <p class="text-[11px] text-slate-400 font-medium">Signed in as</p>
@@ -145,6 +141,14 @@
                                         {{ ucfirst(Auth::user()->role) }}
                                     </span>
                                 </div>
+
+                                @if(Auth::user()->isAdmin())
+                                    <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-sm font-bold text-emerald-700 bg-emerald-50/70 hover:bg-emerald-100 rounded-lg mx-2 transition flex items-center justify-between">
+                                        <span>👑 Admin Panel</span>
+                                        <span class="text-[10px] bg-slate-900 text-white px-2 py-0.5 rounded font-extrabold uppercase">Super</span>
+                                    </a>
+                                @endif
+
                                 <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm hover:bg-slate-50 transition">Dashboard</a>
                                 @if(Auth::user()->isFreelancer())
                                     <a href="{{ route('freelancers.show', Auth::id()) }}" class="block px-4 py-2 text-sm hover:bg-slate-50 transition">Public Profile</a>

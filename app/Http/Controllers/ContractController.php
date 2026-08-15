@@ -338,7 +338,19 @@ class ContractController extends Controller
                 'fee' => $platformFee,
                 'reference_type' => 'ContractMilestone',
                 'reference_id' => $milestone->id,
-                'description' => "Payment received for Milestone: {$milestone->title} (Net after 10% fee)",
+                'description' => "Payment received for Milestone: {$milestone->title} (Net after {$contract->platform_fee_percent}% fee)",
+                'status' => 'completed',
+            ]);
+
+            Transaction::create([
+                'wallet_id' => $freelancerWallet->id,
+                'user_id' => $contract->freelancer_id,
+                'type' => 'platform_fee',
+                'amount' => $platformFee,
+                'fee' => 0,
+                'reference_type' => 'ContractMilestone',
+                'reference_id' => $milestone->id,
+                'description' => "WorkForge Platform Take-Rate Commission ({$contract->platform_fee_percent}%) on Milestone: {$milestone->title}",
                 'status' => 'completed',
             ]);
 

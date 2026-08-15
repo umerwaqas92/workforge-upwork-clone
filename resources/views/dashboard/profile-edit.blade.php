@@ -98,14 +98,106 @@
         </div>
     @endif
 
-    <form action="{{ route('profile.update') }}" method="POST" class="space-y-8">
+    <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="space-y-8">
         @csrf
 
         <!-- Section 1: Basic & Contact Info -->
         <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
             <div class="pb-4 border-b border-slate-100">
-                <h2 class="text-base font-bold text-slate-900 uppercase tracking-wider">1. Basic Information & Location</h2>
-                <p class="text-xs text-slate-400">Your name, profile photo, and working location.</p>
+                <h2 class="text-base font-bold text-slate-900 uppercase tracking-wider">1. Basic Information & Profile Photo</h2>
+                <p class="text-xs text-slate-400">Your profile picture is compressed automatically and displayed across all proposals, contracts, and search results.</p>
+            </div>
+
+            <!-- Avatar Upload to Public Storage API Widget -->
+            <div x-data="{
+                previewUrl: '{{ $user->avatar_url }}',
+                avatarPath: '{{ $user->avatar }}',
+                statusMessage: '',
+                isUploading: false,
+                isDragging: false,
+                isSuccess: false,
+
+                uploadFile(file) {
+                    if (!file || !file.type.startsWith('image/')) {
+                        alert('Please select a valid image file.');
+                        return;
+                    }
+
+                    this.isUploading = true;
+                    this.statusMessage = 'Uploading & optimizing photo...';
+                    this.isSuccess = false;
+
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    formData.append('type', 'avatar');
+
+                    fetch('{{ route('upload.image') }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        this.isUploading = false;
+                        if (data.success) {
+                            this.previewUrl = data.url;
+                            this.avatarPath = data.path;
+                            this.isSuccess = true;
+                            this.statusMessage = '✅ Uploaded & compressed to ' + (data.size / 1024).toFixed(1) + ' KB (Saved in public storage)';
+                        } else {
+                            this.statusMessage = '❌ Upload failed: ' + (data.message || 'Error uploading image');
+                        }
+                    })
+                    .catch(err => {
+                        this.isUploading = false;
+                        this.statusMessage = '❌ Upload error. Please try again.';
+                    });
+                }
+            }" class="p-6 rounded-3xl bg-slate-50 border-2 border-dashed border-slate-300 hover:border-emerald-500 transition space-y-4"
+               @dragover.prevent="isDragging = true"
+               @dragleave.prevent="isDragging = false"
+               @drop.prevent="isDragging = false; if($event.dataTransfer.files.length) uploadFile($event.dataTransfer.files[0])">
+                
+                <input type="hidden" name="avatar" :value="avatarPath">
+
+                <div class="flex flex-col sm:flex-row items-center gap-6">
+                    <!-- Live Avatar Preview -->
+                    <div class="relative shrink-0 text-center">
+                        <img :src="previewUrl" alt="Profile Picture" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover ring-4 ring-white shadow-lg bg-slate-200 mx-auto">
+                        <div x-show="isUploading" class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs rounded-full flex items-center justify-center text-white text-xs font-bold">
+                            Optimizing...
+                        </div>
+                        <span class="inline-block mt-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Public Avatar</span>
+                    </div>
+
+                    <!-- Upload Trigger Area -->
+                    <div class="flex-1 text-center sm:text-left space-y-2">
+                        <h4 class="text-sm font-extrabold text-slate-900">Upload Profile Photo</h4>
+                        <p class="text-xs text-slate-500 max-w-md">
+                            Select a photo from your computer. Our backend API automatically optimizes, compresses to WebP, and saves the file directly in the public directory.
+                        </p>
+
+                        <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2">
+                            <label class="cursor-pointer px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-md flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                <span x-text="isUploading ? 'Uploading...' : 'Choose Image File'"></span>
+                                <input type="file" accept="image/*" @change="if($event.target.files.length) uploadFile($event.target.files[0])" class="hidden" :disabled="isUploading">
+                            </label>
+
+                            <span class="text-xs text-slate-400">or drag & drop here</span>
+                        </div>
+
+                        <!-- Upload / Compression Status Message -->
+                        <div x-show="statusMessage" class="pt-2">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold"
+                                  :class="isSuccess ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-slate-200 text-slate-800'"
+                                  x-text="statusMessage"></span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -114,8 +206,8 @@
                     <input type="text" name="name" value="{{ old('name', $user->name) }}" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Avatar Image URL</label>
-                    <input type="text" name="avatar" value="{{ old('avatar', $user->avatar) }}" placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500">
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Email Address (Read-only)</label>
+                    <input type="email" value="{{ $user->email }}" disabled class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 text-sm cursor-not-allowed">
                 </div>
             </div>
 
@@ -248,8 +340,29 @@
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Cover Image URL</label>
-                                    <input type="text" name="portfolio_images[]" x-model="p.image" placeholder="https://images.unsplash.com/..." class="w-full text-xs rounded-xl border-slate-300 py-2">
+                                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Project Screenshot / Cover</label>
+                                    <div class="flex items-center gap-2">
+                                        <img :src="p.image || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600'" class="w-9 h-9 rounded-lg object-cover ring-1 ring-slate-300 shrink-0">
+                                        <input type="text" name="portfolio_images[]" x-model="p.image" placeholder="Image URL or upload &rarr;" class="w-full text-xs rounded-xl border-slate-300 py-1.5">
+                                        <label class="cursor-pointer px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold shrink-0 transition" title="Upload Image File">
+                                            <span>📷 Upload</span>
+                                            <input type="file" accept="image/*" class="hidden" @change="
+                                                const file = $event.target.files[0];
+                                                if (file) {
+                                                    const formData = new FormData();
+                                                    formData.append('image', file);
+                                                    formData.append('type', 'portfolio');
+                                                    fetch('{{ route('upload.image') }}', {
+                                                        method: 'POST',
+                                                        body: formData,
+                                                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+                                                    }).then(r => r.json()).then(d => {
+                                                        if (d.success) p.image = d.url;
+                                                    });
+                                                }
+                                            ">
+                                        </label>
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Live Demo / Repository Link</label>

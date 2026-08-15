@@ -76,6 +76,8 @@ class DashboardController extends Controller
             'country' => 'nullable|string|max:100',
             'city' => 'nullable|string|max:100',
             'avatar' => 'nullable|string',
+            'avatar_file' => 'nullable|image|max:15360', // Up to 15MB before compression
+            'avatar_base64' => 'nullable|string',
             // Freelancer fields
             'title' => 'nullable|string|max:255',
             'bio' => 'nullable|string',
@@ -114,12 +116,22 @@ class DashboardController extends Controller
             'about' => 'nullable|string',
         ]);
 
+        // Process Compressed Avatar Upload
+        $avatarPath = $user->avatar;
+        if (!empty($validated['avatar_base64']) && str_starts_with($validated['avatar_base64'], 'data:image')) {
+            $avatarPath = $this->saveCompressedAvatarFromBase64($validated['avatar_base64'], $user);
+        } elseif ($request->hasFile('avatar_file') && $request->file('avatar_file')->isValid()) {
+            $avatarPath = $this->saveCompressedAvatarFromFile($request->file('avatar_file'), $user);
+        } elseif (!empty($validated['avatar'])) {
+            $avatarPath = $validated['avatar'];
+        }
+
         $user->update([
             'name' => $validated['name'],
             'phone' => $validated['phone'] ?? $user->phone,
             'country' => $validated['country'] ?? $user->country,
             'city' => $validated['city'] ?? $user->city,
-            'avatar' => $validated['avatar'] ?? $user->avatar,
+            'avatar' => $avatarPath,
         ]);
 
         if ($user->isFreelancer()) {
@@ -236,6 +248,184 @@ class DashboardController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Profile and credentials updated successfully!');
+        return back()->with('success', 'Profile and avatar updated successfully!');
+    }
+
+    public function uploadImage(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|file|image|max:15360', // up to 15MB
+            'type' => 'nullable|string|in:avatar,portfolio,general',
+        ]);
+
+        $user = Auth::user();
+        $type = $request->input('type', 'avatar');
+        $file = $request->file('image');
+
+        $folder = $type === 'portfolio' ? 'portfolio' : 'avatars';
+        $dir = storage_path('app/public/' . $folder);
+        if (!file_exists($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $filename = $folder . '_' . $user->id . '_' . time() . '_' . uniqid() . '.webp';
+        $fullPath = $dir . '/' . $filename;
+        $binary = file_get_contents($file->getRealPath());
+
+        if (extension_loaded('gd')) {
+            $src = @imagecreatefromstring($binary);
+            if ($src) {
+                $origWidth = imagesx($src);
+                $origHeight = imagesy($src);
+                $maxDim = $type === 'portfolio' ? 1000 : 500;
+
+                $newWidth = $origWidth;
+                $newHeight = $origHeight;
+
+                if ($origWidth > $maxDim || $origHeight > $maxDim) {
+                    if ($origWidth >= $origHeight) {
+                        $newWidth = $maxDim;
+                        $newHeight = (int) round(($origHeight * $maxDim) / $origWidth);
+                    } else {
+                        $newHeight = $maxDim;
+                        $newWidth = (int) round(($origWidth * $maxDim) / $origHeight);
+                    }
+                }
+
+                $dst = imagecreatetruecolor($newWidth, $newHeight);
+                imagealphablending($dst, false);
+                imagesavealpha($dst, true);
+                $transparent = imagecolorallocatealpha($dst, 255, 255, 255, 127);
+                imagefilledrectangle($dst, 0, 0, $newWidth, $newHeight, $transparent);
+                imagecopyresampled($dst, $src, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
+
+                if (function_exists('imagewebp')) {
+                    imagewebp($dst, $fullPath, 85);
+                } else {
+                    $filename = $folder . '_' . $user->id . '_' . time() . '_' . uniqid() . '.jpg';
+                    $fullPath = $dir . '/' . $filename;
+                    imagejpeg($dst, $fullPath, 85);
+                }
+
+                $relativePath = $folder . '/' . $filename;
+
+                if ($type === 'avatar') {
+                    if ($user->avatar && str_starts_with($user->avatar, 'avatars/') && file_exists(storage_path('app/public/' . $user->avatar))) {
+                        @unlink(storage_path('app/public/' . $user->avatar));
+                    }
+                    $user->update(['avatar' => $relativePath]);
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'path' => $relativePath,
+                    'url' => asset('storage/' . $relativePath),
+                    'filename' => $filename,
+                    'size' => filesize($fullPath),
+                ]);
+            }
+        }
+
+        // Direct fallback
+        file_put_contents($fullPath, $binary);
+        $relativePath = $folder . '/' . $filename;
+        if ($type === 'avatar') {
+            $user->update(['avatar' => $relativePath]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'path' => $relativePath,
+            'url' => asset('storage/' . $relativePath),
+            'filename' => $filename,
+            'size' => filesize($fullPath),
+        ]);
+    }
+
+    private function saveCompressedAvatarFromBase64(string $base64Data, User $user): string
+    {
+        $dir = storage_path('app/public/avatars');
+        if (!file_exists($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        // Extract binary data from data URL
+        if (preg_match('/^data:image\/(\w+);base64,/', $base64Data, $type)) {
+            $data = substr($base64Data, strpos($base64Data, ',') + 1);
+            $decoded = base64_decode($data);
+            if ($decoded !== false) {
+                return $this->compressAndStoreBinary($decoded, $user);
+            }
+        }
+
+        return $user->avatar ?? '';
+    }
+
+    private function saveCompressedAvatarFromFile($file, User $user): string
+    {
+        $binary = file_get_contents($file->getRealPath());
+        return $this->compressAndStoreBinary($binary, $user);
+    }
+
+    private function compressAndStoreBinary(string $binary, User $user): string
+    {
+        $dir = storage_path('app/public/avatars');
+        if (!file_exists($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $filename = 'avatar_' . $user->id . '_' . time() . '.webp';
+        $fullPath = $dir . '/' . $filename;
+
+        // Try GD compression if GD is loaded
+        if (extension_loaded('gd')) {
+            $src = @imagecreatefromstring($binary);
+            if ($src) {
+                $origWidth = imagesx($src);
+                $origHeight = imagesy($src);
+
+                $maxDim = 500;
+                $newWidth = $origWidth;
+                $newHeight = $origHeight;
+
+                if ($origWidth > $maxDim || $origHeight > $maxDim) {
+                    if ($origWidth >= $origHeight) {
+                        $newWidth = $maxDim;
+                        $newHeight = (int) round(($origHeight * $maxDim) / $origWidth);
+                    } else {
+                        $newHeight = $maxDim;
+                        $newWidth = (int) round(($origWidth * $maxDim) / $origHeight);
+                    }
+                }
+
+                $dst = imagecreatetruecolor($newWidth, $newHeight);
+                imagealphablending($dst, false);
+                imagesavealpha($dst, true);
+                $transparent = imagecolorallocatealpha($dst, 255, 255, 255, 127);
+                imagefilledrectangle($dst, 0, 0, $newWidth, $newHeight, $transparent);
+
+                imagecopyresampled($dst, $src, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
+
+                // Save as WebP with quality 85
+                if (function_exists('imagewebp')) {
+                    imagewebp($dst, $fullPath, 85);
+                } else {
+                    $filename = 'avatar_' . $user->id . '_' . time() . '.jpg';
+                    $fullPath = $dir . '/' . $filename;
+                    imagejpeg($dst, $fullPath, 85);
+                }
+
+                // Delete old local avatar if exists
+                if ($user->avatar && str_starts_with($user->avatar, 'avatars/') && file_exists(storage_path('app/public/' . $user->avatar))) {
+                    @unlink(storage_path('app/public/' . $user->avatar));
+                }
+
+                return 'avatars/' . $filename;
+            }
+        }
+
+        // Fallback: Save binary directly if GD not available or fails
+        file_put_contents($fullPath, $binary);
+        return 'avatars/' . $filename;
     }
 }

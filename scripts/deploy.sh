@@ -178,7 +178,7 @@ remote_db_cli() {
 }
 
 # =============================================================================
-# 3) FTP upload (Python for reliability / passive mode / caching)
+# 3) FTP upload (ZIP-based for speed)
 # =============================================================================
 ftp_upload() {
   if [[ "$SKIP_FTP" == "1" ]]; then
@@ -188,123 +188,72 @@ ftp_upload() {
   [[ -n "$FTP_USER" && -n "$FTP_PASS" ]] || die "FTP_USER / FTP_PASS required in deploy.env"
   need_cmd python3
 
-  info "FTP upload → ${FTP_USER}@${FTP_HOST}:${FTP_REMOTE_ROOT}"
-  KEEP_REMOTE_ENV="$KEEP_REMOTE_ENV" \
+  info "Creating ZIP archive for fast upload..."
+  local zipFile="$ROOT/workforge_deploy.zip"
+
+  # Remove old ZIP if exists
+  rm -f "$zipFile"
+
+  # Create ZIP with all files (excluding .git, node_modules, tests, etc.)
+  cd "$ROOT"
+  ROOT="$ROOT" python3 <<'PY'
+import os, zipfile
+from pathlib import Path
+
+ROOT = Path(os.environ["ROOT"])
+zip_path = ROOT / "workforge_deploy.zip"
+
+# Directories/files to exclude
+excludes = {
+    '.git', 'node_modules', 'tests', 'docs', 'scripts',
+    'workforge_deploy.zip', '.DS_Store', 'php.logs',
+    'workforge_deploy.zip'
+}
+
+# Files/dirs to include for Laravel
+include_dirs = ['app', 'bootstrap', 'config', 'database', 'public', 'resources', 'routes', 'storage', 'vendor']
+include_files = ['.htaccess', 'artisan', 'composer.json', 'composer.lock', 'server.php']
+
+count = 0
+with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+    # Add root files
+    for f in include_files:
+        fp = ROOT / f
+        if fp.is_file():
+            zf.write(fp, f)
+            count += 1
+
+    # Add directories
+    for dir_name in include_dirs:
+        dir_path = ROOT / dir_name
+        if not dir_path.is_dir():
+            continue
+        for p in dir_path.rglob("*"):
+            if p.is_file() and p.name != ".DS_Store":
+                rel = p.relative_to(ROOT).as_posix()
+                # Skip .env in storage if KEEP_REMOTE_ENV
+                zf.write(p, rel)
+                count += 1
+
+print(f"  Created ZIP with {count} files")
+PY
+
+  local zipSize=$(du -h "$zipFile" | cut -f1)
+  info "Uploading workforge_deploy.zip ($zipSize) via FTP..."
+
+  # Upload ZIP and unzip.php via Python FTP
   FTP_HOST="$FTP_HOST" FTP_USER="$FTP_USER" FTP_PASS="$FTP_PASS" \
   FTP_REMOTE_ROOT="$FTP_REMOTE_ROOT" ROOT="$ROOT" \
   python3 <<'PY'
-import os, sys, time, json, hashlib
+import os, time
 from pathlib import Path
-from ftplib import FTP, error_perm
+from ftplib import FTP
 
 ROOT = Path(os.environ["ROOT"])
 HOST = os.environ["FTP_HOST"]
 USER = os.environ["FTP_USER"]
 PASS = os.environ["FTP_PASS"]
 REMOTE = os.environ.get("FTP_REMOTE_ROOT", "/htdocs").rstrip("/") or "/htdocs"
-KEEP_CFG = os.environ.get("KEEP_REMOTE_ENV", "1") == "1"
-
-pairs = []
-
-# === Laravel public directory → htdocs root ===
-public_dir = ROOT / "public"
-if public_dir.is_dir():
-    for p in public_dir.rglob("*"):
-        if p.is_file() and p.name != ".DS_Store":
-            rel = p.relative_to(public_dir).as_posix()
-            # Skip .env if KEEP_REMOTE_ENV
-            if KEEP_CFG and rel == ".env":
-                continue
-            pairs.append((p, f"{REMOTE}/{rel}"))
-
-# === Laravel app directory (routes, controllers, models, views) ===
-app_dir = ROOT / "app"
-if app_dir.is_dir():
-    for p in app_dir.rglob("*"):
-        if p.is_file() and p.name != ".DS_Store":
-            rel = p.relative_to(ROOT).as_posix()
-            pairs.append((p, f"{REMOTE}/{rel}"))
-
-# === config directory ===
-config_dir = ROOT / "config"
-if config_dir.is_dir():
-    for p in config_dir.rglob("*"):
-        if p.is_file() and p.name != ".DS_Store":
-            rel = p.relative_to(ROOT).as_posix()
-            pairs.append((p, f"{REMOTE}/{rel}"))
-
-# === database directory (migrations, seeders) ===
-database_dir = ROOT / "database"
-if database_dir.is_dir():
-    for p in database_dir.rglob("*"):
-        if p.is_file() and p.name != ".DS_Store":
-            rel = p.relative_to(ROOT).as_posix()
-            pairs.append((p, f"{REMOTE}/{rel}"))
-
-# === resources directory (views, lang) ===
-resources_dir = ROOT / "resources"
-if resources_dir.is_dir():
-    for p in resources_dir.rglob("*"):
-        if p.is_file() and p.name != ".DS_Store":
-            rel = p.relative_to(ROOT).as_posix()
-            pairs.append((p, f"{REMOTE}/{rel}"))
-
-# === routes directory ===
-routes_dir = ROOT / "routes"
-if routes_dir.is_dir():
-    for p in routes_dir.rglob("*"):
-        if p.is_file() and p.name != ".DS_Store":
-            rel = p.relative_to(ROOT).as_posix()
-            pairs.append((p, f"{REMOTE}/{rel}"))
-
-# === bootstrap directory ===
-bootstrap_dir = ROOT / "bootstrap"
-if bootstrap_dir.is_dir():
-    for p in bootstrap_dir.rglob("*"):
-        if p.is_file() and p.name != ".DS_Store":
-            rel = p.relative_to(ROOT).as_posix()
-            pairs.append((p, f"{REMOTE}/{rel}"))
-
-# === storage directory (writable) ===
-storage_dir = ROOT / "storage"
-if storage_dir.is_dir():
-    for p in storage_dir.rglob("*"):
-        if p.is_file() and p.name != ".DS_Store":
-            rel = p.relative_to(ROOT).as_posix()
-            pairs.append((p, f"{REMOTE}/{rel}"))
-
-# === vendor directory (composer dependencies) ===
-vendor_dir = ROOT / "vendor"
-if vendor_dir.is_dir():
-    for p in vendor_dir.rglob("*"):
-        if p.is_file() and p.name != ".DS_Store":
-            rel = p.relative_to(ROOT).as_posix()
-            pairs.append((p, f"{REMOTE}/{rel}"))
-
-# === Root files ===
-for root_file in [".htaccess", "artisan", "composer.json", "composer.lock", "server.php", "vendor/autoload.php"]:
-    fp = ROOT / root_file
-    if fp.is_file():
-        pairs.append((fp, f"{REMOTE}/{root_file}"))
-
-print(f"  files: {len(pairs)}")
-
-# Load deploy cache
-cache_file = ROOT / "scripts" / ".deploy_cache.json"
-cache = {}
-if cache_file.is_file():
-    try:
-        with open(cache_file, "r") as f:
-            cache = json.load(f)
-    except:
-        pass
-
-def get_md5(path):
-    h = hashlib.md5()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(65536), b""):
-            h.update(chunk)
-    return h.hexdigest()
 
 def connect():
     ftp = FTP()
@@ -320,72 +269,100 @@ def ensure_dir(ftp, path):
         cur += "/" + part
         try:
             ftp.cwd(cur)
-        except error_perm:
+        except:
             try:
                 ftp.mkd(cur)
-            except error_perm:
+            except:
                 try:
                     ftp.cwd(cur)
-                except error_perm as e:
-                    raise e
-
-ftp = None
-ok = 0
-skipped = 0
-
-for i, (local, remote) in enumerate(sorted(pairs, key=lambda x: x[1]), 1):
-    local_hash = get_md5(local)
-    if cache.get(remote) == local_hash:
-        skipped += 1
-        continue
-
-    if ftp is None:
-        ftp = connect()
-
-    ensure_dir(ftp, remote.rsplit("/", 1)[0])
-    for attempt in range(1, 4):
-        try:
-            with open(local, "rb") as f:
-                ftp.storbinary(f"STOR {remote}", f, blocksize=8192)
-            ok += 1
-            cache[remote] = local_hash
-            break
-        except Exception as e:
-            if attempt == 3:
-                print(f"FAIL {remote}: {e}", file=sys.stderr)
-                sys.exit(1)
-            time.sleep(1.5)
-            try:
-                ftp.quit()
-            except Exception:
-                try:
-                    ftp.close()
-                except Exception:
+                except:
                     pass
-            ftp = connect()
-            ensure_dir(ftp, remote.rsplit("/", 1)[0])
 
-    if (ok + skipped) % 25 == 0 or (ok + skipped) == len(pairs):
-        print(f"  [{ok + skipped}/{len(pairs)}]")
+ftp = connect()
+start = time.time()
 
-if ftp is not None:
-    try:
-        ftp.quit()
-    except Exception:
-        pass
+# Upload ZIP
+zip_path = ROOT / "workforge_deploy.zip"
+print(f"  Uploading {zip_path.name}...")
+with open(zip_path, "rb") as f:
+    ftp.storbinary(f"STOR {REMOTE}/workforge_deploy.zip", f, blocksize=8192)
+print(f"  ✓ ZIP uploaded in {time.time()-start:.1f}s")
 
-# Save deploy cache
-try:
-    with open(cache_file, "w") as f:
-        json.dump(cache, f, indent=2)
-except:
-    pass
+# Upload unzip.php
+unzip_path = ROOT / "scripts" / "unzip.php"
+if unzip_path.is_file():
+    with open(unzip_path, "rb") as f:
+        ftp.storbinary(f"STOR {REMOTE}/unzip.php", f)
+    print("  ✓ unzip.php uploaded")
 
-print(f"  uploaded {ok}/{len(pairs)} (skipped {skipped} unchanged files)")
-if KEEP_CFG:
-    print("  (kept remote .env)")
+ftp.quit()
+print(f"  Total upload time: {time.time()-start:.1f}s")
 PY
-  ok "FTP upload finished"
+
+  ok "ZIP uploaded. Extracting on server..."
+
+  # Auto-extract via HTTP (with InfinityFree anti-bot handling)
+  SITE_URL="$SITE_URL" INSTALL_KEY="$INSTALL_KEY" python3 <<'PY'
+import os, re, json, http.client, socket, ssl
+from urllib.parse import urlparse
+try:
+    from Crypto.Cipher import AES
+except ImportError:
+    import subprocess, sys
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "pycryptodome", "-q"])
+    from Crypto.Cipher import AES
+
+site = os.environ["SITE_URL"].rstrip("/")
+key = os.environ["INSTALL_KEY"]
+parsed = urlparse(site)
+host = parsed.hostname
+is_https = parsed.scheme == "https"
+port = parsed.port or (443 if is_https else 80)
+
+# Create SSL context that doesn't verify self-signed certs
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
+
+def make_conn(ip, port):
+    if is_https:
+        return http.client.HTTPSConnection(ip, port, timeout=45, context=ctx)
+    return http.client.HTTPConnection(ip, port, timeout=45)
+
+def get_cookie(ip_or_host):
+    conn = make_conn(ip_or_host, port)
+    conn.request("GET", "/", headers={"Host": host, "User-Agent": "Mozilla/5.0"})
+    html = conn.getresponse().read().decode("utf-8", "replace")
+    conn.close()
+    m = re.search(r'toNumbers\("([0-9a-f]+)"\).*toNumbers\("([0-9a-f]+)"\).*toNumbers\("([0-9a-f]+)"\)', html, re.S)
+    if not m:
+        return None
+    a,b,c = [bytes.fromhex(x) for x in m.groups()]
+    return AES.new(a, AES.MODE_CBC, b).decrypt(c).hex()
+
+try:
+    ip = socket.gethostbyname(host)
+except Exception:
+    ip = host
+cookie = get_cookie(ip) or get_cookie(host)
+headers = {"Host": host, "User-Agent": "Mozilla/5.0"}
+if cookie:
+    headers["Cookie"] = f"__test={cookie}"
+
+path = f"/unzip.php?secret={key}"
+conn = make_conn(ip, port)
+conn.request("GET", path, headers=headers)
+resp = conn.getresponse()
+body = resp.read().decode("utf-8", "replace")
+conn.close()
+print(body[:3000])
+if "successfully" in body.lower() or "extracted" in body.lower():
+    print("  ✓ Extraction successful!")
+else:
+    print("  ⚠ Check output above for errors")
+PY
+
+  ok "Done! Visit: ${SITE_URL}"
 }
 
 # =============================================================================

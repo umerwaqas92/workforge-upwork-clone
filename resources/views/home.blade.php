@@ -2,43 +2,45 @@
 
 @section('content')
 <!-- Hero Section -->
-<div class="relative overflow-hidden bg-gradient-to-b from-emerald-950 via-slate-900 to-slate-900 text-white pt-12 pb-20 lg:pt-20 lg:pb-28">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="grid lg:grid-cols-12 gap-12 items-center">
-            <div class="lg:col-span-7 space-y-6">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    {{ $stats['total_freelancers'] ?? 10 }}+ Verified Independent Professionals Available Now
+<div class="relative overflow-x-clip bg-gradient-to-b from-emerald-950 via-slate-900 to-slate-900 text-white min-h-[580px] sm:min-h-[660px] lg:min-h-[720px] pt-16 sm:pt-24 lg:pt-32 pb-20 sm:pb-28 lg:pb-36 flex items-center">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+        <div class="grid lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+            <div class="lg:col-span-7 space-y-6 sm:space-y-8">
+                <!-- Verified Freelancers Live Badge -->
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold max-w-full">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+                    <span class="truncate sm:whitespace-normal">{{ $stats['total_freelancers'] ?? 10 }}+ Verified Independent Professionals Available Now</span>
                 </div>
                 
-                <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight">
+                <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight sm:leading-tight pt-1 pb-1">
                     How work <br class="hidden sm:block">
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">should work</span>.
                 </h1>
                 
-                <p class="text-lg text-slate-300 max-w-xl leading-relaxed">
+                <p class="text-base sm:text-lg text-slate-300 max-w-xl leading-relaxed">
                     Forget the old rules. Hire the top 1% of independent talent or discover high-paying projects with protected milestone escrow payments.
                 </p>
 
-                <!-- Search Bar -->
-                <form action="{{ route('jobs.index') }}" method="GET" class="bg-white p-2 rounded-2xl shadow-2xl flex flex-col sm:flex-row gap-2 max-w-xl">
-                    <div class="flex-1 flex items-center gap-3 px-3">
-                        <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        <input type="text" name="search" placeholder="Try 'Laravel developer', 'UI/UX Designer', 'Python'..." class="w-full text-slate-900 placeholder-slate-400 text-sm focus:outline-none border-none ring-0">
+                <!-- Search Bar with Increased Height -->
+                <form action="{{ route('jobs.index') }}" method="GET" class="bg-white p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col sm:flex-row gap-2 max-w-xl border border-white/20">
+                    <div class="flex-1 flex items-center gap-3 px-4 py-3 sm:py-3.5">
+                        <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input type="text" name="search" placeholder="Try 'Laravel developer', 'UI/UX Designer', 'Python'..." class="w-full text-slate-900 placeholder-slate-400 text-sm sm:text-base focus:outline-none border-none ring-0">
                     </div>
-                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-6 py-3 rounded-xl transition shadow-sm">
-                        Find Work
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm sm:text-base font-bold px-7 py-3.5 sm:py-3.5 rounded-xl sm:rounded-2xl transition shadow-md shrink-0 flex items-center justify-center gap-2">
+                        <span>Find Work</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </button>
                 </form>
 
                 <!-- Popular Tags -->
-                <div class="flex flex-wrap items-center gap-2 pt-2 text-xs text-slate-400">
-                    <span>Popular:</span>
-                    <a href="{{ route('jobs.index', ['search' => 'Laravel']) }}" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">Laravel</a>
-                    <a href="{{ route('jobs.index', ['search' => 'Vue.js']) }}" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">Vue.js</a>
-                    <a href="{{ route('jobs.index', ['search' => 'Figma']) }}" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">Figma UI/UX</a>
-                    <a href="{{ route('jobs.index', ['search' => 'AI']) }}" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">AI & LLMs</a>
-                    <a href="{{ route('jobs.index', ['search' => 'Flutter']) }}" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">Flutter</a>
+                <div class="flex flex-wrap items-center gap-2 pt-1 text-xs text-slate-400">
+                    <span class="font-medium text-slate-300">Popular:</span>
+                    <a href="{{ route('jobs.index', ['search' => 'Laravel']) }}" class="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition font-medium">Laravel</a>
+                    <a href="{{ route('jobs.index', ['search' => 'Vue.js']) }}" class="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition font-medium">Vue.js</a>
+                    <a href="{{ route('jobs.index', ['search' => 'Figma']) }}" class="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition font-medium">Figma UI/UX</a>
+                    <a href="{{ route('jobs.index', ['search' => 'AI']) }}" class="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition font-medium">AI & LLMs</a>
+                    <a href="{{ route('jobs.index', ['search' => 'Flutter']) }}" class="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition font-medium">Flutter</a>
                 </div>
             </div>
 
@@ -47,7 +49,7 @@
             <div class="lg:col-span-5 relative hidden lg:block">
                 <div class="relative w-full max-w-md mx-auto space-y-4">
                     @if($topHero)
-                        <div class="bg-slate-800/90 backdrop-blur-md p-5 rounded-2xl border border-slate-700/60 shadow-xl text-white transform hover:-translate-y-1 transition duration-300">
+                        <div class="bg-slate-800/90 backdrop-blur-md p-6 rounded-3xl border border-slate-700/60 shadow-xl text-white transform hover:-translate-y-1 transition duration-300">
                             <div class="flex items-center justify-between mb-3">
                                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                                     <svg class="w-3 h-3 text-amber-400 fill-amber-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -56,7 +58,7 @@
                                 <span class="text-sm font-bold text-emerald-400">${{ number_format($topHero->freelancerProfile->hourly_rate ?? 75, 2) }}/hr</span>
                             </div>
                             <div class="flex items-center gap-3">
-                                <img src="{{ $topHero->avatar_url }}" alt="{{ $topHero->name }}" class="w-12 h-12 rounded-xl object-cover border border-slate-600">
+                                <img src="{{ $topHero->avatar_url }}" alt="{{ $topHero->name }}" class="w-14 h-14 rounded-2xl object-cover border border-slate-600">
                                 <div>
                                     <a href="{{ route('freelancers.show', $topHero->id) }}" class="font-bold text-white text-base hover:text-emerald-400 transition">{{ $topHero->name }}</a>
                                     <p class="text-xs text-slate-400 line-clamp-1">{{ $topHero->freelancerProfile->title ?? 'Senior Engineer' }}</p>
@@ -70,13 +72,13 @@
                     @endif
 
                     <!-- Escrow Protection Badge Card -->
-                    <div class="bg-emerald-950/70 backdrop-blur-md p-4 rounded-2xl border border-emerald-600/30 shadow-xl text-emerald-100 flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shrink-0">
+                    <div class="bg-emerald-950/70 backdrop-blur-md p-5 rounded-3xl border border-emerald-600/30 shadow-xl text-emerald-100 flex items-center gap-3.5">
+                        <div class="w-11 h-11 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shrink-0 shadow-md">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                         </div>
                         <div class="text-xs">
-                            <p class="font-bold text-white">Guaranteed Escrow Protection</p>
-                            <p class="text-emerald-300/80">Funds stay secure until you review and approve the submitted milestones.</p>
+                            <p class="font-bold text-white text-sm">Guaranteed Escrow Protection</p>
+                            <p class="text-emerald-300/80 mt-0.5">Funds stay secure until you review and approve the submitted milestones.</p>
                         </div>
                     </div>
                 </div>
