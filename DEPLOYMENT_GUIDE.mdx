@@ -1,0 +1,78 @@
+---
+title: "WorkForge Marketplace - Deployment, Sync & Environment Guide"
+description: "Standard operating guide for AI agents and developers for synchronizing local, GitHub, and InfinityFree production."
+date: "2026-08-15"
+tags: ["deployment", "sync", "ftp", "laravel", "livewire"]
+---
+
+# 🚀 WorkForge Marketplace - Deployment & Sync Guide
+
+This guide enables any AI agent or software engineer to understand the environment topology, testing protocols, and deployment procedures for **WorkForge**.
+
+---
+
+## 📌 Environment Topology
+
+| Environment | Purpose | URL / Access |
+| :--- | :--- | :--- |
+| **Local Development** | Rapid prototyping & unit testing | `http://127.0.0.1:8008` |
+| **GitHub Repository** | Source code version control | [`github.com/umerwaqas92/workforge-upwork-clone`](https://github.com/umerwaqas92/workforge-upwork-clone) |
+| **Production Server** | Live web application | `http://workforgemarketplace.gt.tc/` |
+| **FTP Remote** | Shared hosting deployment | `ftpupload.net:21` (`user: if0_42654988`, `root: /htdocs`) |
+| **Database Server** | Remote MySQL Database | `sql301.infinityfree.com` (`db: if0_42654988_workforgdedge`) |
+
+---
+
+## ⚡ 1-Click Production Deploy
+
+To compile assets, execute tests, and sync updated files directly to the live server, run:
+
+```bash
+php deploy.php
+```
+
+Or for instant hotfixes (bypassing test suite):
+
+```bash
+php deploy.php --quick
+```
+
+---
+
+## 💻 Standard Development Cycle
+
+1. **Modify Local Code**: Make required changes in `app/`, `resources/views/`, `routes/`, etc.
+2. **Build Vite Assets**:
+   ```bash
+   npm run build
+   ```
+3. **Execute Test Suite**:
+   ```bash
+   php artisan test
+   ```
+4. **Git Commit & Push**:
+   ```bash
+   git add .
+   git commit -m "Your feature description"
+   git push origin main
+   ```
+5. **Deploy to Production**:
+   ```bash
+   php deploy.php
+   ```
+
+---
+
+## ⚙️ Key Artisan Commands
+
+* `php artisan test`: Runs all 16 automated unit & feature tests.
+* `php artisan freelancers:recalculate-badges`: Evaluates ratings and earnings, assigning `Top Rated Plus`, `Top Rated`, or `Rising Talent` badges.
+* `curl http://workforgemarketplace.gt.tc/cron/recalculate-badges`: Pings the remote production cron endpoint.
+
+---
+
+## 👥 Demo Personas
+
+* **Client**: `/quick-login/client`
+* **Freelancer**: `/quick-login/freelancer`
+* **Admin**: `/quick-login/admin` (Dashboard at `/admin/dashboard`)
