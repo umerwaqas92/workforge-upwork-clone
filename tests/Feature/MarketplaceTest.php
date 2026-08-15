@@ -256,4 +256,28 @@ class MarketplaceTest extends TestCase
         $this->assertTrue($profile->is_top_rated);
         $this->assertEquals('top_rated_plus', $profile->badge_tier);
     }
+
+    public function test_admin_settings_view_and_update(): void
+    {
+        $admin = \App\Models\User::where('role', 'admin')->first();
+
+        // 1. View settings page
+        $res = $this->actingAs($admin)->get(route('admin.settings'));
+        $res->assertStatus(200);
+        $res->assertSee('Platform Settings');
+
+        // 2. Update platform fee to 15% and connects to $0.20
+        $postRes = $this->actingAs($admin)->post(route('admin.settings.update'), [
+            'settings' => [
+                'platform_fee_percent' => '15.0',
+                'connect_cost_usd' => '0.20',
+                'min_payout_amount' => '100.0',
+            ]
+        ]);
+
+        $postRes->assertRedirect();
+        $this->assertEquals(15.0, \App\Models\PlatformSetting::get('platform_fee_percent'));
+        $this->assertEquals(0.20, \App\Models\PlatformSetting::get('connect_cost_usd'));
+        $this->assertEquals(100.0, \App\Models\PlatformSetting::get('min_payout_amount'));
+    }
 }

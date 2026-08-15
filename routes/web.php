@@ -46,6 +46,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/settings/profile', [DashboardController::class, 'editProfile'])->name('profile.edit');
     Route::post('/settings/profile', [DashboardController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/upload/image', [DashboardController::class, 'uploadImage'])->name('upload.image');
 
     // Jobs Post & Save (Client & Freelancer)
     Route::get('/post-job', [JobController::class, 'create'])->name('jobs.create');
@@ -97,6 +98,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/contracts', [AdminController::class, 'contracts'])->name('contracts');
     Route::get('/payouts', [AdminController::class, 'payouts'])->name('payouts');
     Route::patch('/payouts/{payout}/status', [AdminController::class, 'updatePayoutStatus'])->name('payouts.status');
+    Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
+    Route::post('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
 });
 
 // Automated Cron Web Hook for Freelancer Badge & Reputation Engine

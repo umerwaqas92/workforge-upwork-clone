@@ -90,10 +90,14 @@ class FreelancerProfile extends Model
         $badgeTier = 'none';
         $isTopRated = false;
 
-        if ($actualEarnings >= 10000 && $calculatedJss >= 90 && $actualCompleted >= 3) {
+        $topRatedPlusMin = (float) PlatformSetting::get('top_rated_plus_earnings_threshold', 10000.0);
+        $topRatedMin = (float) PlatformSetting::get('top_rated_earnings_threshold', 1000.0);
+        $minJss = (int) PlatformSetting::get('min_jss_for_badge', 90);
+
+        if ($actualEarnings >= $topRatedPlusMin && $calculatedJss >= $minJss && $actualCompleted >= 3) {
             $badgeTier = 'top_rated_plus';
             $isTopRated = true;
-        } elseif ($actualEarnings >= 1000 && $calculatedJss >= 90 && $actualCompleted >= 3) {
+        } elseif ($actualEarnings >= $topRatedMin && $calculatedJss >= $minJss && $actualCompleted >= 3) {
             $badgeTier = 'top_rated';
             $isTopRated = true;
         } elseif ($completeness >= 100 && $calculatedJss >= 80) {

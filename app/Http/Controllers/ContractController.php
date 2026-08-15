@@ -59,7 +59,7 @@ class ContractController extends Controller
                 'title' => $validated['title'],
                 'type' => $job->type,
                 'amount' => (float) $validated['amount'],
-                'platform_fee_percent' => 10.00,
+                'platform_fee_percent' => (float) \App\Models\PlatformSetting::get('platform_fee_percent', 10.00),
                 'status' => 'active',
                 'terms' => $validated['terms'] ?? 'Standard freelance agreement',
                 'start_date' => now(),
