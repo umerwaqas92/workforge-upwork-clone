@@ -86,6 +86,9 @@ Route::middleware('auth')->group(function () {
 
 // Admin Panel Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::post('/disputes/{dispute}/resolve', [AdminController::class, 'resolveDispute'])->name('disputes.resolve');
+    Route::post('/payouts/{payout}/approve', [AdminController::class, 'approvePayout'])->name('payouts.approve');
+    Route::post('/users/{user}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('users.toggle');
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/users', [AdminController::class, 'users'])->name('users');
     Route::patch('/users/{user}/status', [AdminController::class, 'updateUserStatus'])->name('users.status');
@@ -95,3 +98,20 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/payouts', [AdminController::class, 'payouts'])->name('payouts');
     Route::patch('/payouts/{payout}/status', [AdminController::class, 'updatePayoutStatus'])->name('payouts.status');
 });
+
+// Automated Cron Web Hook for Freelancer Badge & Reputation Engine
+Route::get('/cron/recalculate-badges', function () {
+    \Illuminate\Support\Facades\Schema::table('freelancer_profiles', function (\Illuminate\Database\Schema\Blueprint $table) {
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('freelancer_profiles', 'badge_tier')) {
+            $table->string('badge_tier', 50)->default('none')->after('is_top_rated');
+        }
+    });
+
+    \Illuminate\Support\Facades\Artisan::call('freelancers:recalculate-badges');
+    
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Freelancer badges recalculated successfully!',
+        'output' => \Illuminate\Support\Facades\Artisan::output(),
+    ]);
+})->name('cron.badges');

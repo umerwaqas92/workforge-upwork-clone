@@ -30,6 +30,7 @@ class FreelancerProfile extends Model
         'employment_history',
         'languages',
         'is_top_rated',
+        'badge_tier',
     ];
 
     protected function casts(): array
@@ -44,12 +45,80 @@ class FreelancerProfile extends Model
             'employment_history' => 'array',
             'languages' => 'array',
             'is_top_rated' => 'boolean',
+            'badge_tier' => 'string',
         ];
     }
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function recalculateBadgeStatus(): array
+    {
+        $user = $this->user;
+        if (!$user) {
+            return ['status' => 'no_user'];
+        }
+
+        // 1. Completed contracts
+        $completedContracts = Contract::where('freelancer_id', $user->id)
+            ->where('status', 'completed')
+            ->get();
+
+        $completedCount = $completedContracts->count();
+        $earningsFromContracts = $completedContracts->sum('amount');
+
+        $actualEarnings = max((float)$this->total_earnings, (float)$earningsFromContracts);
+        $actualCompleted = max((int)$this->completed_jobs_count, $completedCount);
+
+        // 2. JSS Score from client reviews
+        $reviews = Review::where('reviewee_id', $user->id)
+            ->where('role', 'client_to_freelancer')
+            ->get();
+
+        if ($reviews->count() > 0) {
+            $avgRating = $reviews->avg('rating');
+            $calculatedJss = (int) round(($avgRating / 5.0) * 100);
+        } else {
+            $calculatedJss = $this->job_success_score ?? 100;
+        }
+
+        $completeness = $this->completeness_percentage;
+
+        // 3. Evaluate Badge Tier
+        $badgeTier = 'none';
+        $isTopRated = false;
+
+        if ($actualEarnings >= 10000 && $calculatedJss >= 90 && $actualCompleted >= 3) {
+            $badgeTier = 'top_rated_plus';
+            $isTopRated = true;
+        } elseif ($actualEarnings >= 1000 && $calculatedJss >= 90 && $actualCompleted >= 3) {
+            $badgeTier = 'top_rated';
+            $isTopRated = true;
+        } elseif ($completeness >= 100 && $calculatedJss >= 80) {
+            $badgeTier = 'rising_talent';
+            $isTopRated = false;
+        }
+
+        $this->update([
+            'completed_jobs_count' => $actualCompleted,
+            'total_earnings' => $actualEarnings,
+            'job_success_score' => $calculatedJss,
+            'is_top_rated' => $isTopRated,
+            'badge_tier' => $badgeTier,
+        ]);
+
+        return [
+            'user_id' => $user->id,
+            'name' => $user->name,
+            'jss' => $calculatedJss,
+            'earnings' => $actualEarnings,
+            'completed' => $actualCompleted,
+            'completeness' => $completeness,
+            'badge_tier' => $badgeTier,
+            'is_top_rated' => $isTopRated,
+        ];
     }
 
     public function getCompletenessPercentageAttribute(): int

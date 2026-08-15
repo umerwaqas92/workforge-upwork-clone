@@ -144,7 +144,7 @@ class MarketplaceTest extends TestCase
         $admin = User::where('role', 'admin')->first();
         $response = $this->actingAs($admin)->get('/admin/dashboard');
         $response->assertStatus(200);
-        $response->assertSee('Platform Super-Panel Overview');
+        $response->assertSee('Marketplace Super-Panel');
     }
 
     public function test_direct_message_start(): void
@@ -232,5 +232,28 @@ class MarketplaceTest extends TestCase
         $this->actingAs($user2);
         \Livewire\Livewire::test(\App\Livewire\ChatRoom::class, ['conversationId' => $conversation->id])
             ->assertDontSee('is typing...');
+    }
+
+    public function test_freelancer_badge_recalculation_command_and_cron(): void
+    {
+        $freelancer = \App\Models\User::where('role', 'freelancer')->first();
+        $profile = $freelancer->freelancerProfile;
+
+        // Force profile stats to qualify for Top Rated Plus
+        $profile->update([
+            'total_earnings' => 15000.00,
+            'completed_jobs_count' => 5,
+            'job_success_score' => 98,
+            'is_top_rated' => false,
+            'badge_tier' => 'none',
+        ]);
+
+        // Run artisan command
+        $this->artisan('freelancers:recalculate-badges', ['--user' => $freelancer->id])
+            ->assertSuccessful();
+
+        $profile->refresh();
+        $this->assertTrue($profile->is_top_rated);
+        $this->assertEquals('top_rated_plus', $profile->badge_tier);
     }
 }

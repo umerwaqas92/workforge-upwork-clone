@@ -59,9 +59,17 @@
                                     <a href="{{ route('freelancers.show', $freelancer->id) }}" class="text-lg font-bold text-slate-900 hover:text-emerald-600 transition">
                                         {{ $freelancer->name }}
                                     </a>
-                                    @if($freelancer->freelancerProfile?->is_top_rated)
+                                    @if($freelancer->freelancerProfile?->badge_tier === 'top_rated_plus' || ($freelancer->freelancerProfile?->is_top_rated && $freelancer->freelancerProfile?->total_earnings >= 10000))
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-50 text-purple-700 border border-purple-200">
+                                            👑 TOP RATED PLUS
+                                        </span>
+                                    @elseif($freelancer->freelancerProfile?->badge_tier === 'top_rated' || $freelancer->freelancerProfile?->is_top_rated)
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                                            TOP RATED
+                                            ⭐ TOP RATED
+                                        </span>
+                                    @elseif($freelancer->freelancerProfile?->badge_tier === 'rising_talent')
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            🌱 RISING TALENT
                                         </span>
                                     @endif
                                 </div>
