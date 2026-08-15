@@ -1,0 +1,162 @@
+# 🚀 WorkForge Marketplace - Complete System & Feature Manual
+
+Welcome to the definitive feature and operational manual for **WorkForge**, a production-grade freelance marketplace SaaS modeled after Upwork and Fiverr.
+
+---
+
+## 📌 1. System Architecture & Tech Stack
+
+| Layer | Technologies | Purpose |
+| :--- | :--- | :--- |
+| **Backend Framework** | **Laravel 11.x (PHP 8.2+)** | Core routing, Eloquent ORM, transactions, scheduled tasks, Artisan CLI |
+| **Reactive Frontend** | **Livewire 3.x + Alpine.js** | Single-page reactive feeds, live typing indicators, instant filtering |
+| **Styling & Design** | **Tailwind CSS + Custom Utilities** | Fully responsive dark/light components, high-contrast badges |
+| **Escrow & Payments** | **Multi-Gateway Ledger + Dodo** | Milestone-based escrow vaults, balance holds, withdrawal payouts |
+| **Asset Pipeline** | **Vite 6.x** | Fast JS/CSS tree-shaking and font bundling |
+| **Search & SEO** | **OpenGraph + Schema.org JSON-LD** | Social preview cards (1200x630) and rich search snippets |
+
+---
+
+## 💼 2. Client Capabilities & Workflows
+
+### 2.1 Job Creation Wizard
+* **Flexible Contracts**: Support for **Fixed-Price Milestones** or **Hourly Rate** agreements.
+* **Category & Multi-Skill Tagging**: Searchable dropdowns across 8 top disciplines.
+* **✨ Featured Job Listing Upgrade**:
+  * One-click option to highlight the job posting for **$29.99** (configurable in Admin Settings).
+  * Automatically pins the job to the top of the **Homepage** and **Browse Feed** with a golden `✨ FEATURED` badge.
+
+### 2.2 Proposal Review & Talent Shortlisting
+* **Candidate Inbox**: Filter received bids with delivery schedules and attachments.
+* **🚀 Promoted Bid Prioritization**: Proposals boosted by freelancers are pinned to the very top with a purple `🚀 PROMOTED` badge.
+* **One-Click Shortlisting & Interviewing**: Message candidates directly in real-time.
+
+### 2.3 Milestone Escrow Vault & Payment Release
+* **Escrow Protection**: Clients fund milestones into the protected vault.
+* **Deliverable Inspection**: Freelancers submit deliverables with submission notes.
+* **1-Click Release**: Approving a milestone automatically deducts the platform take-rate commission and credits the freelancer's wallet instantly.
+
+---
+
+## 🌟 3. Freelancer Capabilities & Workflows
+
+### 3.1 Job Discovery & Search Feed (`/jobs`)
+* **Real-Time Livewire Filtering**: Search by keywords, categories, fixed/hourly type, and experience level (`Entry`, `Intermediate`, `Expert`).
+* **Budget Sorting**: Sort by *Newest First*, *Highest Budget*, or *Fewest Proposals*.
+* **Saved Jobs Bookmark**: Save jobs to a personal watchlist with 1 click.
+
+### 3.2 Proposal Submission & Take-Rate Calculator (`/proposals/create`)
+* **Dynamic Fee Calculation**: As the freelancer types their bid, the platform take-rate (e.g. `10%`) and net payout are calculated in real time.
+* **Milestone Scheduling**: Ability to divide large contracts into custom phases.
+* **🚀 Boost Proposal**: Freelancers can spend **+10 Connects** to pin their proposal to the top of the client's inbox.
+
+### 3.3 🎖️ 3-Tier Reputation & Badge Engine
+Badges are evaluated automatically daily via cron:
+1. **👑 Top Rated Plus**: Earned $\ge \$10,000$, JSS $\ge 90\%$, and $\ge 3$ completed contracts.
+2. **⭐ Top Rated**: Earned $\ge \$1,000$, JSS $\ge 90\%$, and $\ge 3$ completed contracts.
+3. **🌱 Rising Talent**: 100% complete profile and positive initial review.
+
+### 3.4 Freelancer Wallet & Multi-Method Withdrawals (`/wallet`)
+* **Live Balances**: Real-time breakdown of Available Balance vs Escrow Protected.
+* **Multi-Gateway Payouts**: Request withdrawals via **Direct Bank Wire (ACH)**, **PayPal Express**, **Dodo Payments**, or **USDC Crypto**.
+* **Enforced Thresholds**: Minimum payout validation (e.g. `$50.00`) and transparent fixed fees (`$1.50`).
+
+---
+
+## 💬 4. Real-Time Chat & Communications
+
+* **Contract & Job Association**: Conversations are tied to specific jobs and active contracts.
+* **💬 Real-Time Typing Indicator**:
+  * Debounced `@input.debounce.400ms` Alpine & Livewire listener.
+  * 3-dot bouncing animated bubble showing `[User] is typing...`.
+  * Instant auto-clearing via Cache TTL.
+* **Unread Counters & System Notifications**: Email receipts dispatched for every milestone funded, work submitted, and payment released.
+
+---
+
+## 👑 5. Admin Super-Panel & Controls
+
+Accessible via `/admin/dashboard` with 1-click Admin Switcher:
+
+### 5.1 📊 Executive Dashboard (`/admin/dashboard`)
+* Gross Marketplace Volume (GMV).
+* Total Platform Revenue.
+* Active Contracts and Open Disputes counter.
+* Real-time User, Job, and Transaction Streams.
+
+### 5.2 📈 Revenue & Financials Hub (`/admin/revenue`)
+* **Real-time accounting of all monetization streams**:
+  * 🥇 Contract Milestone Take-Rate Commissions
+  * 💳 Client Deposit Payment Surcharges
+  * 🎟️ Connects Token Pack Sales
+  * 💸 Withdrawal Processing Fees
+* **Itemized Platform Fee Revenue Ledger**: Searchable audit log of every fee collected.
+
+### 5.3 ⚙️ Platform Settings & Monetization Engine (`/admin/settings`)
+* **Interactive Live Profit Simulator**: Adjust take-rate % and instantly preview admin profit vs freelancer payout on any contract size.
+* **Dynamic Variables**:
+  * `platform_fee_percent` (Default: `10.0%`)
+  * `client_processing_fee_percent` (Default: `3.0%`)
+  * `connect_cost_usd` (Default: `$0.15`)
+  * `featured_job_price_usd` (Default: `$29.99`)
+  * `boost_proposal_connects` (Default: `10` tokens)
+  * `min_payout_amount` (Default: `$50.00`)
+  * `payout_fixed_fee` (Default: `$1.50`)
+  * `top_rated_earnings_threshold` (Default: `$1,000.00`)
+  * `top_rated_plus_earnings_threshold` (Default: `$10,000.00`)
+
+### 5.4 👥 User & Job Moderation (`/admin/users`, `/admin/jobs`)
+* Instant account status toggling (**Active** / **Suspended**).
+* Job status management (**Open**, **In Progress**, **Completed**, **Closed**).
+
+### 5.5 💰 Payout Requests Settlement (`/admin/payouts`)
+* Approve pending freelancer withdrawal requests with 1 click.
+* Automatically updates transaction ledgers to `Completed`.
+
+---
+
+## 💰 6. Marketplace Monetization Summary
+
+```
+   REVENUE STREAM                  ADMIN TAKE                      TRIGGER
+   ──────────────────────────────────────────────────────────────────────────────────────────
+   1. Contract Take-Rate           10% - 20%                       Milestone Payment Release
+   2. Proposal Bidding Connects    $0.15 / token ($7.50 / 50pk)    Connects Exhaustion / Boost
+   3. Client Deposit Surcharge     3% - 5%                         Wallet Top-up & Card Deposit
+   4. Payout Withdrawal Fee        $1.50 flat                      Freelancer Bank/PayPal Cashout
+   5. Featured Job Listing         $29.99                          Job Creation / Promotion Upgrade
+```
+
+---
+
+## 🖼️ 7. SEO, Social Previews & Metadata
+
+* **Vector Favicons**: Crisp SVG (`/favicon.svg`) and multi-resolution ICO (`/favicon.ico`).
+* **High-Res OpenGraph Sharing**: 1200x630 social preview image (`/images/workforge-og.png`) for Discord, Twitter, LinkedIn, WhatsApp, and Facebook.
+* **Schema.org Structured Data**:
+  * `JobPosting` JSON-LD on all `/jobs/{slug}` routes.
+  * `Person` JSON-LD on all `/freelancers/{id}` routes.
+  * `Organization` JSON-LD on global layouts.
+
+---
+
+## 🚀 8. DevOps, Testing & 1-Click Deployment
+
+### Automated 1-Click Production Deployer:
+```bash
+php deploy.php
+```
+
+### Automated Test Suite:
+```bash
+php artisan test
+```
+* **19 Tests Passing (`58 assertions, 0 failures`)**.
+
+---
+
+## 👥 Demo Accounts (1-Click Switcher)
+
+* **Client**: `http://workforgemarketplace.gt.tc/quick-login/client`
+* **Freelancer**: `http://workforgemarketplace.gt.tc/quick-login/freelancer`
+* **Super Admin**: `http://workforgemarketplace.gt.tc/quick-login/admin`
