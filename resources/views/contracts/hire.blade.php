@@ -44,10 +44,19 @@
         </div>
 
         <!-- Total Contract Amount -->
-        <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200/80">
-            <label class="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">Total Contract Budget ($) *</label>
-            <p class="text-xs text-slate-400 mb-3">Total amount to be paid over the lifecycle of this contract.</p>
-            <input type="number" step="0.01" name="amount" x-model.number="contractAmount" required class="w-full sm:w-64 px-4 py-3 rounded-xl border border-slate-300 text-slate-900 text-lg font-bold">
+        <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">Total Contract Budget ($) *</label>
+                    <p class="text-xs text-slate-400">Total amount to be paid over the lifecycle of this contract.</p>
+                </div>
+                <input type="number" step="0.01" name="amount" x-model.number="contractAmount" required class="w-full sm:w-64 px-4 py-3 rounded-xl border border-slate-300 text-slate-900 text-lg font-bold">
+            </div>
+
+            <div class="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-600 flex items-center justify-between">
+                <span>Platform Commission Rate: <strong class="text-slate-900">{{ \App\Models\PlatformSetting::get('platform_fee_percent', 10.0) }}%</strong></span>
+                <span class="text-slate-500">Freelancer Net: $<strong class="text-emerald-700" x-text="(contractAmount * (1 - {{ \App\Models\PlatformSetting::get('platform_fee_percent', 10.0) }} / 100)).toFixed(2)"></strong></span>
+            </div>
         </div>
 
         <!-- Milestones Schedule -->

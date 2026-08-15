@@ -3,7 +3,8 @@
 @section('content')
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10" x-data="{
     bidAmount: {{ $job->budget_max ?: ($job->budget_min ?: 1000) }},
-    get fee() { return Math.round(this.bidAmount * 0.10 * 100) / 100 },
+    platformFeeRate: {{ \App\Models\PlatformSetting::get('platform_fee_percent', 10.0) }},
+    get fee() { return Math.round(this.bidAmount * (this.platformFeeRate / 100) * 100) / 100 },
     get receive() { return Math.round((this.bidAmount - this.fee) * 100) / 100 },
     milestones: [
         { title: 'Milestone 1: Core Architecture & Setup', amount: {{ round(($job->budget_max ?: 1000) / 2) }} },
@@ -50,7 +51,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">10% Platform Fee</label>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+                        <span x-text="platformFeeRate + '%'"></span> Platform Fee
+                    </label>
                     <div class="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 text-base font-bold">
                         -$<span x-text="fee.toFixed(2)"></span>
                     </div>

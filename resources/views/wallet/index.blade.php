@@ -148,8 +148,12 @@
             <form action="{{ route('wallet.payout') }}" method="POST" class="space-y-4">
                 @csrf
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Withdrawal Amount ($) *</label>
-                    <input type="number" step="0.01" min="20" max="{{ $wallet->balance }}" name="amount" value="{{ min(500, $wallet->balance) }}" required class="w-full px-4 py-3 rounded-xl border border-slate-300 text-lg font-bold">
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Withdrawal Amount ($) *</label>
+                        <span class="text-[11px] text-slate-400">Min: ${{ number_format(\App\Models\PlatformSetting::get('min_payout_amount', 50.0), 2) }}</span>
+                    </div>
+                    <input type="number" step="0.01" min="{{ \App\Models\PlatformSetting::get('min_payout_amount', 50.0) }}" max="{{ $wallet->balance }}" name="amount" value="{{ max(\App\Models\PlatformSetting::get('min_payout_amount', 50.0), min(500, $wallet->balance)) }}" required class="w-full px-4 py-3 rounded-xl border border-slate-300 text-lg font-bold">
+                    <p class="text-[11px] text-slate-400 mt-1">Platform payout processing fee: <strong>${{ number_format(\App\Models\PlatformSetting::get('payout_fixed_fee', 1.50), 2) }}</strong></p>
                 </div>
 
                 <div>

@@ -72,9 +72,12 @@ class WalletController extends Controller
         $user = Auth::user();
         $wallet = Wallet::firstOrCreate(['user_id' => $user->id]);
 
+        $minPayout = (float) \App\Models\PlatformSetting::get('min_payout_amount', 50.0);
+        $payoutFee = (float) \App\Models\PlatformSetting::get('payout_fixed_fee', 1.50);
+
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:20|max:' . $wallet->balance,
-            'payout_method' => 'required|in:bank_transfer,paypal,stripe_connect,crypto',
+            'amount' => 'required|numeric|min:' . $minPayout . '|max:' . $wallet->balance,
+            'payout_method' => 'required|in:dodo_payout,bank_transfer,paypal,stripe_connect,crypto',
             'account_email' => 'nullable|string',
             'account_number' => 'nullable|string',
         ]);
@@ -100,10 +103,10 @@ class WalletController extends Controller
             'user_id' => $user->id,
             'type' => 'payout',
             'amount' => $amount,
-            'fee' => 0.00,
+            'fee' => $payoutFee,
             'reference_type' => 'PayoutRequest',
             'reference_id' => $payout->id,
-            'description' => "Withdrawal request ({$validated['payout_method']})",
+            'description' => "Withdrawal request ({$validated['payout_method']}) - Fixed fee: \${$payoutFee}",
             'status' => 'pending',
         ]);
 
