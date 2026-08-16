@@ -3,6 +3,8 @@
 
 Welcome! This guide is written in simple, non-technical language so that **anyone** can easily install, customize the branding (name, logo, favicon), configure the environment, and launch this script on any web hosting provider (cPanel, Hostinger, Namecheap, Bluehost, SiteGround, VPS, etc.).
 
+> 💡 **Visual guide:** Prefer a clickable, illustrated manual? Open **`documentation/index.html`** in your browser — it includes the same steps with screenshots of the marketplace.
+
 ---
 
 ## 📑 Table of Contents
@@ -16,6 +18,7 @@ Welcome! This guide is written in simple, non-technical language so that **anyon
 8. [Configuring Email & Payment Gateways](#8-configuring-email--payment-gateways)
 9. [Default Admin & Demo Logins](#9-default-admin--demo-logins)
 10. [Troubleshooting & Common Questions](#10-troubleshooting--common-questions)
+11. [Support & Contact](#11-support--contact)
 
 ---
 
@@ -161,16 +164,17 @@ You have two simple ways to set up the database tables:
 4. Click **Choose File** and select the file `database/schema.sql` (or `database/database.sqlite` converted).
 5. Click **Import / Go** at the bottom.
 
-### Option 2: Via Web Hook / Terminal (1-Click)
+### Option 2: Via the Built-in Web Installer (1-Click, Recommended)
 - **If you have SSH Terminal**: Run:
   ```bash
-  php artisan migrate --seed --force
+  php artisan migrate:fresh --seed --force
   ```
 - **If you don't have SSH Terminal**: Simply visit the built-in setup URL in your browser:
   ```
-  https://yourdomain.com/cron/recalculate-badges
+  https://yourdomain.com/installer.php?secret=workforge2026
   ```
-  *(This automatically verifies and initializes all missing table columns and badges).*
+  *(This automatically creates ALL database tables, categories, skills, sample jobs, and demo users in one click. When you see the green "Setup completed successfully!" message, your marketplace is ready.)*
+- **After setup, delete the `installer.php` file** from the `public/` folder so the setup wizard can't be opened again.
 
 ---
 
@@ -184,8 +188,11 @@ To make sure profile avatars, job attachments, and portfolio images load quickly
   ```
 - **Via cPanel File Manager (without SSH)**:
   1. Open `public_html/public/`
-  2. If a folder or shortcut named `storage` is not present, create a directory alias or visit:
-     `https://yourdomain.com/storage-link-setup` (or execute via a 1-line PHP file `<?php symlink('../storage/app/public', 'storage'); echo 'OK'; ?>`).
+  2. If a shortcut named `storage` is not present, upload this tiny one-line PHP helper as `public_html/public/storage-link.php`, open `https://yourdomain.com/storage-link.php` in your browser, then **delete the helper file**:
+     ```php
+     <?php symlink('../storage/app/public', __DIR__ . '/storage'); echo 'Storage link created!';
+     ```
+  3. Note: the built-in `installer.php` also tries to create this link automatically during setup.
 
 - **File Permissions**:
   Ensure the following folders have **775** or **755** write permissions:
@@ -232,7 +239,7 @@ After installation, the system comes with ready-to-test demo accounts:
 | Role | Email | Password | Quick 1-Click Login |
 | :--- | :--- | :--- | :--- |
 | **Super Admin** | `admin@upwork.test` | `password` | `https://yourdomain.com/quick-login/admin` |
-| **Client** | `marcus.client@upwork.test` | `password` | `https://yourdomain.com/quick-login/client` |
+| **Client** | `client@upwork.test` | `password` | `https://yourdomain.com/quick-login/client` |
 | **Freelancer** | `alex.dev@upwork.test` | `password` | `https://yourdomain.com/quick-login/freelancer` |
 
 ### Accessing the Super Admin Panel
@@ -266,6 +273,17 @@ From the Super Admin panel, you can:
   php artisan config:clear
   php artisan cache:clear
   ```
+
+---
+
+## 11. Support & Contact
+
+Need help with installation, customization, or anything else? We're here for you!
+
+- **Chat on WhatsApp**: <a href="https://wa.me/923459347900"><b>+92 345 9347900</b></a> — tap the link to start a WhatsApp chat (or add this number to your contacts and message us).
+- **Email**: <a href="mailto:um.waqas.khan@gmail.com"><b>um.waqas.khan@gmail.com</b></a>
+
+Please include a short description of your issue and, if possible, a screenshot so we can help you faster.
 
 ---
 
